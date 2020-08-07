@@ -1,0 +1,497 @@
+*** PREFACE ***
+Rvalues indicate object eligible for move operations, while lvalues generally don't.
+Rvalues correspond to objects you can refer to, either by name or by following a pointer or lvalue reference.
+A useful heuristic to determine whether an expression is an lvalue is to ask if you can take its address. If you can, it typically is.
+public: Widget(Widget&& rhs);
+
+Copies of rvalues are generally move constructed, while copies of lvalues are usally copy constructed.
+void someFunc(Widget w);
+someFunc(std::move(wid))
+
+The arguments are used to initialize the function's parameters.
+The distinction between arguments and parameters is important, because parameters are lvalues, but the arguments with which they are initialized may be rvalues or lvalues.
+perfect forwarding - an argument passed to a function is passed to a second function such that the original argument's rvalueness or lvalueness is preserved
+
+function object - an object that acts like a function; an object of type supporting an operator() member function
+callable objects - anything that can be invoked using the syntax of a non-member function call; this covers operator(), functions, C-like function pointers, member function pointers
+closures - function objects created through lambda expressions
+
+Declarations introduce names and types without giving details.
+Definitions provide the storage locations or implementation details.
+function's signature - a part of its declaration that specifies parameter and return types
+undefined behavior - runtime behavior is unpredictable
+
+std::move - treat argument as a temporary object (rvalue); casting rvalue to lvalue is allowed
+std::forward - cast a templated function parameter (inside the function) to the value category (lvalue or rvalue); this allows performing a perfect forwarding; casting rvalue to lvalue is prohibited
+
+
+
+*** DEDUCING TYPES FOR FUNCTION TEMPLATES ***
+template<typename T> void f(ParamType param); f(expr);
+
+(1) ParamType is a pointer or reference type, but not a universal reference - T&
+    1. If expr's type is a reference, ignore the reference part.
+    2. Then pattern-match expr's type against ParamType to determinate T.
+(2) ParamType is a universal reference - T&&
+    1. If expr is an lvalue, both T and ParamType are deduced to be lvalue references.
+    2. If expr is an rvalue, the 'normal' rules (from above) apply.
+(3) ParamType is neither a pointer nor a reference - T
+    1. If expr's type is a reference, ignore the reference part.
+    2. If, expr is const or volatile ignore that, too.
+(4) ParamType is an array or a function argument (arr- and func-to-ptr decay)
+
+Examples:
+int x = 27; 
+const int cx = x; 
+volatile const int& vx = x;
+const char* const ptr = "Fun with pointers";
+const char name[] = "J. P. Briggs";
+void someFunc(int, double);
+if ParamType:=T& calling f(cx); then T:=const int and param:=const int &
+if ParamType:=T&& calling f(x); then T:=int& and param:=int&
+if ParamType:=T&& calling f(27); then T:=int and param:=int&&
+if ParamType:=T calling f(vx); then T:=int and param:=int
+if ParamType:=T calling f(ptr); then T:=const char* const and param:=const char*
+if ParamType:=T calling f(name); then T:=const char* and param:=const char*
+if ParamType:=T& calling f(name); then T:=const char[13] and param:=const char(&)[13]
+if ParamType:=T& calling f(someFunc); then T:=void (&)(int,double), param:=ref-to-func
+
+constexpr - makes a function declaration result available during compilation
+noexcept - help compilers to generate a better code
+
+trailing return type syntax example:
+template<typename Container, typename Index>
+auto authAndAccess(Container& c, Index i) -> decltype(std:forward<Container>(c)[i]) { 
+    authenticateUser(); 
+    return c[i]; 
+    // C++11
+}
+template<typename Container, typename Index>
+decltype(auto) authAndAccess(Container&& c, Index i) {
+    authenticateUser();
+    return std::forward<Container>(c)[i];
+    // C++14
+}
+
+
+*** AUTO KEYWORD ***
+function object - std::function template is a generalization of a function that can point to any callable object (anything that can be invoked as a function); this approach is generally bigger and slower compared with auto approach (closure hold in memory, restricted inlining)
+
+std::vector<int> v;
+std::vector<int>::size_type  // official type: unsigned integral type
+unsigned sz = v.size();      // on 64-bit Windows: 32 bits
+auto sz = v.size();          // on 64-bit Windows: 64 bits
+
+std::unordered_map<std::string, int> m;
+for (const std::pair<std::string, int>& p : m) {
+    // key is const!
+    // type of the pair in the hash table is std::pair<const std::string, int>
+    // compiler will do a convertion to std::pairt<string, int> for a temporary object
+    // explicit type specification leads to implicit convertions
+}
+
+
+std::vector<bool> features(const Widget& w);
+Widget w;
+bool highPriority = features(w)[5];                    // OK
+auto highPriority = features(w)[5];                    // undefined behavior
+auto highPriority = static_cast<bool>(features(w)[5]); // explicitly typed initializer idiom
+processWidget(w, highPriority);
+// std::vector<T> holds operator[] that is supposed to return a T&
+// operator[] returns a reference to an element of the container, except bool
+// for bools operator[] return std::vector<bool>::reference, a nested class (proxy class)
+// std::vector<bool> is specified to represent its bools in packed form, one bit per bool
+// yet, C++ forbids references to bits
+// not being able to return bool&, operator[] returns an object that acts like a bool&
+// to make this work we need an implicit conversion to bool, not to bool&
+// auto deduced type depends on the ::reference implementation (i.e. ptr-to-word + offset)
+// the call to features returns a temporary std::vector<bool> object temp
+// invoked temp->operator[] returns ::reference containing a ptr-to-word plus offset[5]
+// highPriority of a copy of a pointer to a word in temp with its offset
+// at the end of the statement temp is destroyed because is a temporary object
+// this means that highPriority contains a dangling pointer!
+
+
+proxy class: a class that exists for the purpose of emulating and augmenting the behavior of some other type; std::vector<bool>::reference offers the illusion that operator[] returns a reference to a bit; STL smart pointers types graft resource management onto raw pointers; apparent Proxies examples: std::shared_ptr, std::unique_ptr; invisible Proxies examples: std::vector<bool>::reference, std::bitset::reference, classes from STL using expression templates
+
+// expression template
+// originally developed to improve the efficiency of numeric code
+Matrix sum = m1 + m2 + m3 + m4;
+auto sum = static_cast<Matrix>(m1 + m2 + m3 + m4); // explicitly typed initializer idiom
+// operator+ for Matrix should return a proxy for the result
+// for two Matrix objects the result should be Sum<Matrix, Matrix>
+// we need to provide an implicit conversion from the proxy class to Matrix
+// the entire initialization expression: Sum<Sum<Sum<Matrix, Matrix>, Matrix>, Matrix>
+// general rule: invisible proxy classes don't play well with auto keyword
+// proxy classes are often designed to live for a single statement
+// creating variables of those types tends to violate fundamental library design assumptions
+// how to recognize when proxy objects are in use?
+// function signatures usually reflect their existence (they're typically returned from those)
+// also, pay careful attention to the interfaces you're using
+
+// explicitly typed initializer idiom
+double calcEpsilon();
+float ep = calcEpsilon();                    // may be or not deliberate, intend not clear
+auto ep = static_cast<float>(calcEpsilon()); // deliberate type reduction
+
+
+*** DISTINGUISH BETWEEN PARENTHESES AND BRACES ***
+uniform initialization: a single initialization syntax that can, at least in concept, be used anywhere and express everything
+(1) 'uniform initialization' is an idea, 'braced initialization' is a syntactic construct
+(2) specyfing the initial contents of a container is easy
+(3) braces can be used to specify default initialization values for non-static data members
+(4) it prohibits implicit narrowing conversions among built-in types
+(5) it is immune to C++'s most vexing parse
+(6) if one or more constructors declare a parameter of type std::initializer_list, calls using the braced iniitialization syntax **strongly** prefer the overloads taking this type
+
+most vexing parse: a side effect of C++'s rule that anything that can be parsed as a declaration must be interpreted as one; usually afflicts situations when you want to default-construct an object, but inadvertently declaring a function instead
+
+Widget w1;                      // call default constructor
+Widget w2 = w1;                 // calls copy ctor
+w1 = w2;                        // call copy operator=
+std::vector<int> v{ 1, 3, 5 };  // initial content is in braces
+std::atomic<int> ai1{ 0 };      // assignment, where '=' is not allowed
+double x, y, z;
+int sum1{ x + y + z };          // ERROR, double not expressible as int
+int sum2(x + y + z);            // OK, expression truncated to int
+int sum3 = x + y + z;           // ditto
+Widget w3(10);                  // call Widget ctor with argument 10
+Widget w4();                    // declares a function w2 that returns Widget
+Widget w5{};                    // calls Widget ctor with no args
+
+class Widget {
+public:
+    Widget(int i, bool b);
+    Widget(int i, double d);
+    Widget(std::initializer_list<long double> il);
+    operator float() const;                          // conversion operator
+};
+
+Widget w1(10, true);          // first ctor
+Widget w3(10, 5.0);           // second ctor
+Widget w2{10, true};          // third ctor, conversion to long double
+Widget w4{10, 5.0};           // ditto
+Widget w5(w4);                // copy ctor
+Widget w7(std::move(w4));     // move ctor
+Widget w6{w4};                // third ctor, w4 -> float -> long double
+Widget w8{std::move(w4)};     // ditto
+Widget w9{};                  // edge case, the rule is default construction
+Widget w10({});               // third ctor, empty list
+std::vector<int> v1(10, 20);  // 10 elements, each of value 20
+std::vector<int> v2{10, 20};  // 2 elements, values 10 and 20
+                              // is now viewed as an error in the interface design
+                              // il overloads overshadows others overloads
+                              // in auto type deduction {} is a std:initializer_list
+
+template<typename T, typename... Ts>
+void doSomeWork(Ts&&... params) {
+    // T - type of objects to create
+    // Ts - types of arguments to use
+    // we either use parens or braces for parsing
+    T localObject(std::forward<Ts>(params)...);
+    T localObject{std::forward<Ts>(params)...};
+}
+
+std::vector<int> v;
+doSomeWork<std::vector<int>>(10, 20);
+// for parens, v has 10 elements; for braces, v has 2 elements
+// which is correct? only the caller can know!
+
+
+*** DIFFERENCES BETWEEN 0, NULL, NULLPTR ***
+literal 0 is an int, not a pointer
+if 0 is used in a context where only a pointer can be used, it'll be interpreted as null pointer, which is a fallback position
+the same is true for NULL, yet it is allowed to give it an integral type other than int, especially long
+a guideline for C++98 is to avoid overloading on pointer and integral types because of function overload resolution surprises
+
+void f(int);
+void f(bool);
+void f(void *);
+f(0);             // calls f(int)
+f(NULL);          // may not compile, otherwise calls f(int)
+// if NULL is defined to be 0L than the call is ambiguous
+// conversion long -> int, long -> bool, 0L -> void* are equally good
+
+nullptr: a type that can be viewed as a pointer of all types
+(1) nullptr does not have integral type nor pointer type
+(2) nullptr type is std::nullptr_t
+(3) std::nullptr_t is defined to be the type of nullptr
+(4) std::nullptr_t implicitly converts to all raw pointer types
+(5) overloaded function with nullptr argument always calls the void* overload
+(6) preferred to use in templates
+
+
+*** ALIASES AND TYPEDEFS ***
+(1) aliases are possibly easier with function pointers
+(2) alias declarations may be templatized (alias templates)
+
+typedef std::unique_ptr<std::unordered_map<std::string, std::string>> UPtrMapSS;
+using UPtrMapSS = std::unique_ptr<std::unordered_map<std::string, std::string>>;
+typedef void (*FP)(int, const std::string &);
+using FP = void (*)(int, const std::string &);
+
+
+template<typename T>
+using MyAllocList = std::list<T, MyAlloc<T>>;
+// MyAllocList<Widget> lw;
+
+template<typename T>
+struct MyAllocList {
+    typedef std::list<T, MyAllocList<T>> type;
+};
+// MyAllocList<Widget>::type lw;
+
+
+template<typename T>
+class Widget {
+private:
+    typename MyAllocList<T>::type list;
+    // typedef type inside a template must be preceded with typename
+    // nested MyAllocList<T>::type is a dependent type
+    // ::type may not name a type (there might be a specialization of MyAllocList)
+};
+
+template<typename T> using MyAllocList = std::list<T, MyAlloc<T>>;
+template<typename T> class Widget {
+private:
+    MyAllocList<T> list;
+    // alias template; typename is neither required nor permitted
+    // MyAllocList must name a type, thus MyAllocList<T> is a non-dependent type
+};
+
+template<> class MyAllocList<Wine> {
+private:
+    enum class WineType { White, Red, Rose };
+    WineType type;
+    // this a MyAllocList template specialization for T=Wine
+    // type is a data member, MyAllocList<T>::type inside Widget will refer to it
+};
+
+
+In template metaprogramming (TMP) sometimes there is a need to take template type parameters and create a revised types from them. For example, we want to T=const std::string & turn into std::string. In C++11+ this type of transformations are available as templates and are called type traits. Type traits are implemented as nested typedefs inside templatized structs (reasons for this are historical, Standarization Committee first choose was typedef).
+std::remove_const<T>::type               // C++11, const T -> T
+std::remove_const_t<T>                   // C++14
+std::remove_reference<T>::type           // T&/T&& -> T
+std::remove_reference_t<T>
+std::add_lvalue_reference<T>::type       // T -> T&
+std::add_lvalue_reference_t<T>
+std::transformation<T>::type             // C++11 common form
+std::transformation_t<T>                 // C++14 alias template
+
+
+*** SCOPED AND UNSCOPED ENUMS ***
+* enum classes reduce namespace pollution by scoping their names (those in braces)
+* enum classes are strongly typed (underlying type is int, usually std::size_t), whereas unscoped enums implicitly converts to integral types (usually float or char)
+* scoped enums may be forward-declared (no need for enumerators in braces)
+
+
+enum Color { black, white, red };        // 4 names in the same scope, C++98
+auto white = false;                      // ERR, white already declared
+
+enum class Color { black, white, red };  // 3 names scoped to Color, C++11
+auto white = false;                      // fine
+Color c = white;                         // ERR, white is not declared
+auto c = Color::white;                   // fine
+
+auto comparison = c < 14.5;              // OK, for unscoped enum
+enum class Status;                       // forward-declaration
+
+enum class Status : std::uint32_t;       // specyfing underlying type
+enum Color : std::uint8_t;               // either at declaration or deifinition
+
+
+template<typename E>
+constexpr auto toUType(E enumerator) noexcept {
+    // C++14
+    return static_cast<std::underlying_type_t<E>>(enumerator);
+}
+
+enum class UserInfoFields { uiName, uiEmail, uiReputation };
+using UserInfo = std::tuple<std::string, std::string, std::size_t>;
+UserInfo uInfo;
+auto val = std::get<toUType(UserInfoFields::uiEmail)>(uInfo);
+
+
+*** DELETED FUNCTIONS VS PRIVATE FUNCTIONS ***
+* making new functions public resulting in better error messages (private complains etc.)
+* any function may be deleted, while only member functions may be private
+* deleted functions can't be used
+* deleted functions are taken into consideration during overload resolution
+* deleted functions prevent use of a template instantiations that should be disabled
+
+
+template<class charT, class traits = char_traits<charT>>
+class basic_ios : public ios_base {
+public:
+    basic_ios(const basic_ios&) = delete;
+    basic_ios& operator=(const basic_ios&) = delete;
+};
+
+
+bool isLucky(int number);              // we want only ints
+bool isLucky(char) = delete;           // reject chars
+bool isLucky(bool) = delete;           // reject bools
+bool isLucky(double) = delete;         // reject doubles and floats
+                                       // C++ prefers the conversion to double
+
+template<typename T> void processPointer(T* ptr);
+template<> void processPointer<void>(void*) = delete;
+template<> void processPointer<char>(char*) = delete;
+template<> void processPointer<const void>(const void*) = delete;
+template<> void processPointer<const char>(const char*) = delete;
+template<> void processPointer<const volatile void>(const volatile void*) = delete;
+template<> void processPointer<const volatile char>(const volatile char*) = delete;
+template<> void processPointer<std::wchar_t>(std::wchar_t*) = delete;
+template<> void processPointer<std::char16_t>(std::char16_t*) = delete;
+template<> void processPointer<std::char32_t>(std::char32_t*) = delete;
+template<> void processPointer<std::char8_t>(std::char8_t*) = delete;
+// void*, char* (cv-qualified or not)
+// std::wchar_t (depending on compiler and target platform, for wide characters)
+// std::char16_t (since C++11, UTF-16, 2 bytes, as std::uint_least16_t)
+// std::char32_t (since C++11, UTF-32, 4 bytes, as std::uint_least32_t)
+// std::char8_t (since C++20, UTF-8, 1 byte, as unsigned char, char, signed char)
+
+
+*** OVERRIDED FUNCTIONS ***
+Requirements for overriding class member functions:
+* base class function must be virtual
+* base and derived function names must match (except destructors)
+* base and derived function parameter types must match
+* base and derived function constness must match
+* base and derived function return type and exception specification must be compatible
+* base and derived function reference qualifiers must be identical (C++11)
+
+Member function reference qualifiers limits use of a member function to lvalues or rvalues only. They need not be virtual to use them.
+
+class Widget {
+public:
+    void doWork() &;                 // only when *this is an lvalue
+    void doWork() &&;                // only when *this is an rvalue
+};
+
+Widget w;
+w.doWork();                          // calls Widget::doWork() &
+Widget makeWidget();
+makeWidget().doWork();               // calls Widget::doWork() &&
+
+
+Contextual keyword override:
+* make explicit that a derived class function is supposed to override a base class version
+* compiler will kvetch about all the overriding-related problems
+
+Contextual keyword final:
+* (applied to a function) prevents function from being overridden in derived class
+* (applied to a class) prohibits from being used as a base class
+
+
+class Base {
+public:
+    virtual void mf1() const;
+    virtual void mf2(int x);
+    virtual void mf3() &;
+    virtual void mf4() const;
+    void mf5() final;
+};
+
+class Derived : public Base {
+public:
+    virtual void mf1() const override;
+    virtual void mf2(int x) override;
+    virtual void mf3() & override;
+    void mf4() const override;
+};
+
+
+
+***  ***
+
+
+
+
+
+*** ITEMS ***
+** Deducing types
+Item 01: Understand template type deduction.
+Item 02: Understand auto type deduction.
+Item 03: Understand decltype.
+Item 04: Know how to view deduced types.
+
+** auto
+Item 05: Prefer auto to explicit type declarations.
+Item 06: Use the explicitly typed initializer idiom when auto deduces undesired types.
+
+** Moving to modern C++
+Item 07: Distinguish between () and {} when creating objects.
+Item 08: Prefer nullptr to 0 and NULL.
+Item 09: Prefer alias declarations to typedefs.
+Item 10: Prefer scoped enums to unscoped enums.
+Item 11: Prefer deleted functions to private undefined ones.
+Item 12: Declare overriding functions override.
+Item 13: Prefer const_iterators to iterators.
+Item 14: 
+
+
+
+*** THINGS TO REMEMBER ***
+** Item 1
+* During template type deduction, arguments that are references are treated as non-references, i.e., their reference-ness is ignored.
+* When deducing types for universal reference parameters, lvalue arguments get special treatment.
+* When deducing types for by-value parameters, const and/or volatile arguments are treated as non-const and non-volatile.
+* During template type deduction, arguments that are array or function names decay to pointers, unless they're used to initialize references.
+
+** Item 2
+* auto type deduction is usually the same as template type deduction, but auto type deduction assumes that a braced initializer represents a std:initializer_list, and template type deduction doesn't.
+* auto in a function return type or a lambda parameter implies template type deduction, not auto type deduction.
+
+** Item 3
+* decltype almost always yields the type of a variable or expression without any modifications.
+* For lvalue expressions of type T other than names, decltype always reports a type of T&.
+* C++14 supports decltype(auto), which, like auto, deduces a type from its initializer, but it performs the type deduction using the decltype rules.
+
+** Item 4
+* Deduced types can often be seen using IDE editors, compiler error messages, and the Boost TypeIndex library.
+* The results of some tools may be neither helpful nor accurate, so an understanding of C++'s type deduction rules remains essential.
+
+** Item 5
+* auto variables must be initialized, are generally immune to type mismatches that can lead to portability or efficiency problems, can ease the process of refactoring, and typically require less typing than variables with explicitly specified types.
+
+** Item 6
+* 'Invisible' proxy types can cause auto to deduce the 'wrong' type for an initializing expression.
+* The explicitly typed initializer idiom forces auto to deduce the type you want it to have.
+
+** Item 7
+* Braced initialization is the most widely usable initialization syntax, it prevents narrowing conversions, and it's immune to C++'s most vexing parse.
+* During constructor overload resolution, braced initializers are matched to std::initializer_list parameters if at all possible, even if other constructors offer seemingly better matches.
+* An example of where the choice between parentheses and braces can make a significant difference is creating a std::vector<numeric type> with two arguments.
+* Choosing between parentheses and braces for object creation inside templates can be challenging.
+
+** Item 8
+* Prefer nullptr to 0 and NULL.
+* Avoid overloading on integral and pointer types.
+
+** Item 9
+* typedef's don't support templatization, but alias declarations do.
+* Alias templates avoid the '::type' suffix, and, in templates, the 'typename' prefix often required to refer to typedefs.
+* C++14 offers alias templates for all the C++11 type traits transformations.
+
+** Item 10
+* C++98-style enums are now known as unscoped enums.
+* Enumerators of scoped enums are visible only within the enum. They convert to other types only with a cast.
+* Both scoped and unscoped enums support specification of the underlying type. The default underlying type for scoped enums is int. Unscoped enums have no default underlying type.
+* Scoped enums may always be forward-declared. Unscoped enums may be forward-declared only if their declaration specifies an underlying type.
+
+** Item 11
+* Prefer deleted functions to private undefined ones.
+* Any function may be deleted, including non-member functions and template instantiations.
+
+** Item 12
+* Declare overriding functions override.
+* Member function reference qualifiers make it possible to treat lvalue and rvalue objects (*this) differently.
+
+** Item 13
+* Prefer const_iterators to iterators.
+* In maximally generic code, prefer non-member versions of begin, end, rbegin, etc., over their member function counterparts.
+
+** Item 14
+
+

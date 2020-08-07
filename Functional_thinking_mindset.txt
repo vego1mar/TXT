@@ -1,0 +1,162 @@
+FUNCTIONAL THINKING
+This represents the functional paradigm: pure functions that accept parameters and return results. 
+
+Fundamental shift in thinking: focus on results, not steps. 
+The tricky part is to learn to think in a different way.
+From the technical point of view functional programming is all about applying transformations.
+
+[Coupling and composition - 1]
+Object-oriented programming makes code understandable by encapsulating moving parts. Functional programming makes code understandable by minimizing moving parts. - Michael Feathers
+functional approach - composing, object-oriented approach - coupling
+coupling: logically connecting two different parts of code; subordinating one value with other value or one behavior with other behavior; decrease abstraction, increase code mangling
+composition (functional): building a functionality by functions argument passing
+composition (object-oriented): building a functionality by creating a field for another object
+styles of code reuse: coupling via inheritence, composition via parameters
+
+[Coupling and composition - 2]
+pure functions: ones that have no side-effects (doesn't change other parts of code; do intended stuff); a function that relies on no state except its parameter
+equals() characteristics: reflexive, symmetric, transitive, consistent, null-catching
+equals() for subclasses: SubClass should own a reference of BaseClass rather than becoming BaseClass
+composition (functional): is a reuse mechanism; builds peer-to-peer connections
+inherintence (functional): builds trees of functions-messages
+higher-order function: a function that does at least one of the following: takes one or more functions as arguments, returns a function as its results; should not be confused with functor; a term from mathematics field called category theory
+functor: a function object used to pass function pointers along with its state; a class that can behave as a function, a function that can behave like a class
+higher-order functions alternatives: function pointers, macros, dynamic code evaluation (dynamic- and static-linking or just-in-time-compilation), objects, defunctionalization
+defunctionalization: a compile-time transformation which eliminates higher-order functions, replacing them by a single first-order apply function; translation from multi-argument to single-argument
+first-order (apply) function: a function that is not a higher-order function; a function that dispatches on their first argument and performing the instructions denoted by the function identifier on the remaining arguments
+first-class citizen: a citizen (type, object, entity, value) used for passing, returning or assigning functions as arguments to other functions
+first-class functions: functions that are treated as first-class citizens; functions that can act as any other data structure; functions that can appear anywhere any other language construct can appear; functions that absorb design patterns into keywords or language's constructs; example: map(function, list) in Python; higher-order functions supported mostly by functional, scripting and C family languages
+common functional building blocks: folds, filtering, mapping
+folding: general approach for combining together two elements ('summing up'); a catamorphism - an operation that refers to a transformation that combines each element of the list with the next one, accumulating a single result for the entire list; a fold left collapses the list leftward, otherwise it'll be a right fold; in simple manner it means using parentheses for the operation as applying catamorphism i.e.: 1+(2+(3+(4+(5 + NIL)))) for the left fold; fold left algorithm: (1) take an initial value and combine it via an operation on the first element of the list, (2) take the result and apply the same operation to the next element, (3) keep doing this until the list is exhausted
+catamorphism: a morphism from category theory; in programming used for iteration, list or trees folding; in functional programming is commonly known as polymorphic fold function (polymorphic in terms of the category theory, that is f+g == f[g[x]]); foldLeft() and foldRight() in Scala, inject() in Groovy, reduce() in Python, std::accumulate() in C++, Aggregate in C#
+filtering: creating a smaller list by filtering items in a list based on some user-defined criteria; filter(), findAll()
+mapping: an operation which transforms a collection into a new collection by applying a function to each of the elements; map(), nub()
+
+[Functional design patterns - 1]
+design pattern: a named, cataloged solution to a common problem
+design patterns in functional programming: absorbed by language, implementation details differ, solution is implemented using capabilities other languages or paradigms lack of
+traits: factories & currying, first-class functions & design patterns, Flyweight & memoization
+currying: transforms a multi-argument function so that it can be called as a chain of single-argument functions; closely related to partial application; named after mathematician Haskell Curry; acts as a factory for functions by allowing functions to act as any other data structure through a common feature in functional programming - first- and higher-order functions
+partial application: a technique for assigning a fixed value to one or more of the arguments to a function, thereby producing another function of smaller arity
+arity: the number of parameters to the function
+currying as a function factory: adder = { return x+y }; incrementer = adder.curry(1); incrementer(7); // == 8
+predicate function: a common term in the functional world for a Boolean function
+Template Method: defines the skeleton of an algorithm in a method, deferring some steps to subclasses and forcing them define those steps without changing the algorithm's structure; availability of first-class functions simplifying this design pattern implementation; in functional approach algorithm's steps may be a merely properties of the class
+Strategy: defines a family of algorithms, encapsulating each one and making them interchangeable; functional implementation of this pattern is affected by the presence of first-class functions which concludes that is has been absorbed by the language itself
+Flyweight: an optimization technique that uses sharing to support a large number of fine-grained object references; you keep a pool of objects available, creating references into the pool for particular views; Flyweight uses the idea of a canonical object; implementation of this design pattern doesn't come with a rigid code structure; a common efficiency gimmick is to combine Flyweight with the Factory pattern, especially a Singleton factory
+Singleton: in Scala this design pattern (or anti-pattern) has been absorbed by a runtime through usage of @Singleton annotation
+canonical object: a single representative object that represents all other objects of that type i.e. instead of creating a list of products for each user, you create one list of canonical products and each user has a reference into that list for their product
+memoization: a feature built into a programming language that enables automatic caching of recurring function-return values; String.intern() in Java, memoize() in Scala
+
+[Functional design patterns - 2]
+traits: Adapter, dynamic Adapter in Groovy, metaprogramming, functional adapters
+Adapter: a design pattern which translates one interface for a class into a compatible interface
+open classes (dynamic languages): the ability to reopen existing classes to add, remove or change methods; in Groovy there are two mechanisms for open classes: categories and ExpandoMetaClass
+Functional adapters: functions, composition
+object composition: a way to combine objects or data types into more complex ones; refers to the logical or conceptual structure of the information; relate to data structures where common ones are the tagged union, set, sequence; when the outer object is destroyed so well are the composed objects; composition is usually implemented such that an object contains another object (HAS relationship)
+aggregation: a composition that does not imply ownership; aggregation is usually implemented such that the object may contain a reference or pointer to the object and not have lifetime responsibility for it (USES relationship)
+
+[Functional design patterns - 3]
+Interpreter: given a language, define a representation for its grammar along with an interpreter that uses the representation to interpret sentences in the language; this pattern is the least understood and is the most powerful
+next-generation JVM languages: Groovy, Scala, Clojure, Kotlin, ...
+traits: operator overloading, extending classes, implicit casts
+operator overloading: the ability to redefine operators to work with new types and exhibit new behaviors
+closures: standalone functions definitions in functions definitons with interconnectivity
+category class: a class that holds only static methods with at least one parameter for each
+
+[Functional error handling with Either and Option]
+Either: a class that accepts one of two types; used for functional style of error handling; disjoint union
+disjoint union (tagged union): a structure that holds either left or right value but never both
+Either class interface: left(), right(), isLeft(), isRight(), fold(left, right), static left(a), static right(b), private Either(a, b)
+Either class example: Either<Exception, Integer> e = parseRomanNumeral("XLII")
+Either's advantages: lazy initilization for _1(), default values, wrapping exceptions, nested exceptions, trees
+P1: Functional Java - _1() is used to pass a code block around without executing it
+laziness: variables aquisition (initialization) take place when needed (when code block was invoked)
+lazy expression: expression that executes on demand
+Option - Scala's equivalent of Either; it's either None or Some
+Option usage: Option<Double> o; Option.none(); Option.some(arg);
+Option's terms: some - function return value, none - procedure execution
+monads: special data structures that represent computation, i.e. Either & Option
+
+[Functional features in Groovy - 1]
+seeing lists differently: not as indexed slots but as head and tail; this allows to iterate through it using recursion; imperative version of iteration comes with minding the state of the return value, in recursive version the language itself manages the return value; this is offloading of moving parts - if I'm never allowed to touch the intermediate results of the list, I cannot introduce bugs in the way that I interact with it
+lazy list: a list whose contents are generated only as you need it; they also allow the creation of infinite sequences, lists that have no upper bound - you can let it be as big as it needs to be
+lazy list interface: LazyList(head, tail), getTail(), getHead(n), filter(closure)
+One of the ways that developers make quantum leaps in productivity is by building effective abstractions to hide details. We would never get anywhere if we were still coding with ones and zeros.
+
+[Functional features in Groovy - 2]
+orthogonality: components which don't have any effects or side-effects on one another
+open class: Groovy's ability to reopen an existing class to augment or remove its functionality; it allows you to reopen a class such as String and add new methods to it; the language has two techniques for achieving this: categories and ExpandoMetaClass; this feature isn't itself particularly 'functional' yet, since Groovy is essentially a dialect of Java, we can weave in third-party libraries to augment Groovy's classes (we can map data types with metaprogramming) such as Stream class from Functional Java
+infinite stream may be implemented such as: head is a citizen, tail is a function that gives us the rest
+
+[Functional features in Groovy - 3]
+caching use cases for functions: intraclass and external calls
+caching alternatives: hand-crafted state and memoization (caching through function)
+intraclass caching: during normal use the function is typically called multiple times per function argument
+external caching: the overall results are used by whoever is calling the code, so the second run is fast
+moving parts: state in code that a developer must maintain and dissect implications for; i.e. caching of intermediate values and coping with OutOfMemoryError; functional programming strives to minimize moving parts by building reusable mechanisms into the runtime; such an example is memoization
+memoization: a feature built into a programming language that enables automatic caching of recurring function-return values; memoize(), memoizeAtMost(), memoizeAtLeast(), memozieBetween() in Groovy
+Functional languages build generic machinery that you can apply to standard constructs. Functional programming eliminates moving parts, allowing you to focus your energy on solving real problems.
+
+[Immutability]
+immutability: an immutable object's state cannot change after construction; example: java.lang.String
+immutable class: has only final fields (effectively constants), is final itself (no subclassing is allowed), doesn't have zero-argument constructor (if you have no state to set, why do you have an object?), provide at least one constructor, do not provide any alternating methods (setters are prohibited, getters should return defensive copies)
+Note that you don't need to worry about exposing fields if they are immutable, thus simple fields of an immutable class may be public.
+angry monkeys: it's a reference to the 1960s behavioral scientists experiment with monkeys, stepladder and a banana; the point? In software projects, lots of the practices exist because 'that's the way we'e always done it'
+Uniform Access Principle (Bertrand Meyer, Eiffel creator): 'All services offered by a module should be available through a uniform notation, which does not betray whether they are implemented through storage or through computation'; in other words, accessing a field shouldn't expose whether it's a field or a method that returns a value
+failure atomicity (Joshua Bloch): success or failure based on mutability is forever resolved once the object is constructed; thus immutable objects are automatically thread-safe and have no synchronization issues
+
+[Laziness - 1]
+lazy evaluation: deferral of expression evaluation for as long as possible
+laziness benefits: deferring expensive calculations, infinite collections, generating more efficient code
+consider: length([2+1, 3*2, 1/0, 5-4]); should it be 4 or DivisionByZeroException?; this is the difference between strict- and non-strict programming languages
+lazy packages: Jakarta Commons Collections, Totally Lazy
+
+[Laziness - 2]
+prepend/cons (Groovy): a syntax feature that wraps a collection in a closure to convert it to a lazy collection; i.e. lazy empty list: { -> [] }, lazy list with element A: { -> [ A, { -> [] } ] }; forcing the evaluation in lazy terms can be also obtained by call() method
+lazy collections benefits: infinite sequences (values aren't evaluated until needed), reduced storage size, generating more efficient runtime code
+lazy fields: lazy val x = timeConsumingAndOrSizableComputation() in Scala; @Lazy attribute from AST facility (Abstract Syntax Tree Transformations) in Groovy
+soft references (Groovy): Java's version of a pointer reference that can be reclaimed if needed
+
+[Rethinking dispatch]
+dispatch mechanism: ways that programming languages dynamically choose behavior; example: switch conditional statement works differently in Java (C-style) and Groovy (similar in intent to pattern matching in Scala; let's you match ranges and other complex types)
+pattern matching (Scala): lets you specify matching cases with corresponding behavior; example: def letterGrade(value: Any) : String = value match { case x:Int if (90 to 100).contains(x) => "A" }; often used in conjunction with Scala's case classes
+case classes (Scala): classes intended to represent algebraic and other structured data types
+homoiconicity: a feature of the Lisp family languages; meaning that language is implemented using its own data structures; this allows for extensions unavailable to other languages; the idea is to modify the language toward the problem, not translating problems into the syntax (which practically means that keywords' behavior can be extended)
+multimethods (Clojure): a polymorphic solution whereby dispatch is triggered by whatever characteristic or combination the developer wants; it's a method definition that accepts a dispatch function, which returns the decision criteria; example: (defn basic-colors-in [color])() (defmulti color-string basic-colors-in) (defmethod color-string [:red] [color])(); with this we can decouple polymorphism from inheritance, thus providing a contextualized dispatch mechanism; learning to think functionally this way forces you to shift paradigms, yet it separates you from cluttered code with extraneous workarounds like design patterns
+
+[Thinking functionally - 1]
+favored abstractions in functional programming: (1) elimination or diminishment of shared state instead of sharing state across the methods as intermediate results through usage of pure functions that could be static; (2) dynamic dispatch mechanism through language constructs and keywords behavior; (3) lazy evaluation as optimization technique absorbed by the language; (4) a vast representation of higher-order functions which provided all sort of transformations, especially folding, filtering, mapping, zipping; (5) design patterns absorbed by the language, i.e. currying (Factory), memoization (Flyweight), operator overloading (Interpreter); (6) closures and lambdas (calculus); (7) generators as iterators; (8) monads, i.e. Either & Option as disjoint unions; (9) offloading of moving parts, i.e. the ability to iterate through a list using recursion; (10) memoization as caching; (11) immutability facilities; (12) list comprehensions; (13) recursion; (14) referential transparency
+closures & higher-order functions relation: higher-order functions can be injected in places of object-oriented design where language forces you to create an instance of a class that will be used only as a placeholder for behavior; Java rectified its previous approach to this problem with introducing anonymous inner classes; Groovy built a closure type for this, which includes a call() method and absorb it to the language allowing for usage of curly braces {} as a code block of closure type
+a fundamental shift in thinking: 'focus on results, not steps'; what is the essence of the problem?; as time goes on, we're going to spend less time worrying about the steps required to solve a problem and think in terms of processes
+
+[Thinking functionally - 2]
+underlying theme: control - when you want it, when you need it and when you should let it go; functional language constructs such as higher-order and first-class functions allow to focus more on what the code does rather than how it does it; example: iteration, which you can handle on your own vs using the first-class functions
+control traits: first-class functions, optimizations, closures
+closure: a function that carries an implicit binding to all the variables referenced within it; the function or method encloses a context around the things it references
+the next abstraction leap: ceding more mundane details such as iteration, concurrency, and state to the runtime as much as possible; this doesn't mean that you can't take control back if you need to - but you have to want it, not have it forced upon you; we've happily given away responsibility for garbage collection, memory management and hardware differences
+
+[Thinking functionally - 3]
+traits: currying & partial application, filtering via recursion
+implicit parameter (Scala, Python): allows a placeholder with no name as an underscore _ character when a named variable isn't needed
+currying: transforms a multi-argument function so that it can be called as a chain of single-argument functions; example (Groovy): def product = { x,y -> return x*y }; def quadrate = product.curry(4); println "4x3: ${quadrate(3)}"
+partial application: a technique for assigning a fixed value to one or more of the arguments to a function, thereby producing another function of smaller arity; it resembles currying but does not restrict the resulting function to a single argument; example (Groovy): def volume = { h,w,l -> return h*w*l }; def lengthPA = volume.curry(1,2); println "1x2x6: ${lengthPA(6)}"
+recursion: the process of repeating items in a self-similar way; a way to iterate over things by calling the same method from itself, always carefully ensuring you have an exit condition
+
+[Transformations and optimizations]
+'Functional programming has its roots in both mathematics and computer science, both of which have strong opinions about terminology. (...) Learning functional programming paradigms is difficult because of the inconsistency of terminology.' - Neal Ford
+1GLS (first-generation languages): a group of programming languages that are machine level for first-generation computers such as mechanical calculators, punched-card machines, analog computers
+2GLs (second-generation languages): a generational way to categorize assembly languages; properties: mnemonic commands, code may be written by a programmer, is specific to a particular processor family and environment
+3GLs (third-generation languages): a generational way to categorize high-level computer programming languages; improves things of 2GLs by having the computer take care of non-essential details; examples: C, C++, C#, Java, BASIC, Fortran, Algol, COBOL, Pascal
+4GLs (fourth-generation languages): languages that may include support for database management, report generation, mathematical optimization, GUI development, web development; some 3GLs like Python, Ruby and Perl combine some 4GL abilities; some researchers state that 4GLs are a subset of domain-specific languages; examples: LabVIEW, PowerBuilder, Unix Shell, SQL, ABAP, GraphTalk, Simulink (MATLAB), PL/SQL, R, Mathematica
+5GL (fifth-generation language): any programming language based on problem solving using constraints given to the program, rather than using an algorithm written by a programmer; possible exemplars: Go, Rust
+
+[Why functional programming is on the rise?]
+functional programming traits: (1) ceding control, (2) results over steps, (3) coarse-grained abstractions, (4) few data structures with lots of operations, (5) new and different tools, (6) bending the language toward the problem, (7) aligning with language trends
+ceding control: byte-code & virtual machines, garbage collection
+results over steps: iteration, summing a list
+coarse-grained abstractions: code reuse via higher-order functions, terser syntax
+few data structures & lots of operations: folding, filtering, mapping, zipping applied on lists, sets, maps, trees, code blocks
+new & different tools: lazy data structures, closures, currying, monads, list comprehensions
+bending the language toward the problem: malleability of the language; things such as operator overloading or implicit types
+aligning with language trends: internal caching (memoization)

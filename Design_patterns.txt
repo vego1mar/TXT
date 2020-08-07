@@ -1,0 +1,415 @@
+CREATIONAL
+Factory Method/Virtual Constructor
+Abstract Factory/Kit
+Singleton
+Multiton/Registry of Singletons
+Prototype
+Builder
+Object Pool
+Dependency Injection/Inversion of Control
+
+STRUCTURAL
+Adapter/Wrapper/Translator
+Bridge/Handle/Body
+Composite
+Decorator/Wrapper
+Facade
+Flyweight
+Private Class Data
+Description: restricts accessor or mutator access
+Proxy/Surrogate/Placeholder
+Extension Objects
+Marker/Marker Interface
+Module
+Twin
+
+BEHAVIORAL
+Chain of Responsibility
+Command/Action/Transaction
+Interpreter
+Memento
+Null Object
+Mediator
+Observer/Publish-subscribe
+State
+Strategy
+Template Method
+Iterator
+Visitor
+Servant/Helper Class/Utility Class
+
+FUNCTIONAL
+Closure
+Currying
+Function Composition
+Functor
+Monad
+Generator
+
+CONCURRENCY
+Active Object
+Actor
+Balking
+Barrier
+Binding Properties
+Coroutine
+Compute Kernel
+Double-checked Locking
+Event-based Asynchronous
+Fiber
+Futex
+Futures and Promises
+Guarded Suspension
+Immutable Object
+Join
+Lock
+Messaging/Messaging Desing Pattern/MDP
+Monitor Object/Monitor
+Nuclear
+Proactor
+Reactor
+Read-Write Lock
+Scheduler
+Thread Pool
+Thread-specific Storage/Thread-local storage
+
+ARCHITECTURAL
+ADR/Action-Domain-Responder
+Active Record
+Broker/Message Broker
+Client-Server
+CBD
+DAO/Data Access Object
+DTO/Data Transfer Object
+DDD
+ECS/Entity-Component-System
+EDA
+Front Controller
+Identity Map
+Interceptor
+Implicit Invocation
+JSP Model 2/Model 2
+MOM
+Microservices
+MVA/Model-View-Adapter
+MVC/Model-View-Controller
+MVP/Model-View-Presentation
+MVVM/Model-View-ViewModel
+Monolithic
+Multitier
+Naked Objects
+ORB
+P2P
+Publish-Subscribe
+PAC/Presentation-Abstraction-Control
+REST
+SOA
+Service Locator
+SN
+SBA
+Specification
+
+CLOUD DISTRIBUTED
+Ambassador
+Anti-Corruption Layer
+Bulkhead
+Cache Aside
+Circuit Breaker
+CQRS
+Compensating Transaction
+Competing Consumers
+Compute Resource Consolidation
+Event Sourcing
+External Configuration Store
+Federated Identity
+Gatekepeer
+Index Table
+Leader Election
+MapReduce
+Materialized View
+Pipes/Pipeline
+Filters
+Priority Queue
+Queue-Based Load Leveling
+Retry
+Scheduler Agent Supervisor
+Sharding
+Sidecar
+Strangler
+Throttling
+Valet Key
+
+BUSINESS
+Money/Quantity
+Range Values
+Gateway
+Mapper
+Layer Supertype
+Separated Interface
+Registry
+Value Object
+Special Case
+Plugin
+Service Stub
+Record Set
+Client Session State
+Server Session State
+Database Session State
+Optimistic Offline Lock
+Pessimistic Offline Lock
+Coarse Grained Lock
+Implicit Lock
+Remote Facade
+Page Controller
+Template View
+Transform View
+Two-Step View
+Application Controller
+Metadata Mapping
+Query Object
+Repository
+Identity Field
+Foreign Key Mapping
+Association Table Mapping
+Dependent Mapping
+Embedded Value
+Serialized LOB
+Single Table Inheritance
+Class Table Inheritance
+Concrete Table Inheritance
+Inheritance Mappers
+Unit of Work
+Table Data Gateway
+Row Data Gateway
+Data Mapper
+Transaction Script
+Domain Model
+Table Module
+Service Layer
+
+ARTIFICIAL INTELLIGENCE
+Blackboard
+
+OTHERS
+Lazy Initialization/Lazy Loading
+Resource Acquisition Is Initialization/RAII
+Business Delegate
+Composite Entity
+Intercepting Filter
+Mangler
+Mock Object
+Type Tunnel
+Method Chaining
+Workflow
+Whiteboard
+Blockchain
+UI Data Binding/Property Binding
+Type Tunnel
+Table Date Gateway
+Store-passing Style
+Software Framework
+Single-serving Visitor
+Scheduled-Task
+Row Date Gateway
+Provider Model
+Process
+PoD/Point of Delivery
+NVI/Non-virtual Interface
+MVC4WPF
+MMV/Multiuse Model View
+Map/Parallel Map
+LCHH Architecture/Loader-Content-Handler-Handler
+Lazy Inheritance
+JSP Model 1/Model 1
+Interaction
+Head-Body
+Hash Consing
+Generation Gap
+Fluent Interface
+Exception Chaining/Exception Wrapping
+Double-chance Function
+Double Dispatch
+Dispose
+Differentiated service
+Delegation
+DCI/Data, context and interaction
+Data mapper
+CRTP/Curiously recurring template pattern
+Composite entity
+Circuit breaker
+Canonical model
+Business delegate
+Binding properties
+RTE/Restricted template expansion/Barton-Nackman trick
+Back-off
+AMI/Asynchronous method invocation/Asynchronous method call/Asynchronous
+Archetype
+Amelioration
+Aggregate
+Active record
+ADP/Abstract Document Pattern
+
+=========================================
+
+Factory Method/Virtual Constructor
+creates an instance of several derived classes
+
+Abstract Factory/Kit
+creates an instance of several families of classes
+create factory of factories
+
+Singleton
+a class of which only a single instance can exist
+a class that has only one instance with a global access point
+
+Multiton/Registry of Singletons
+ensure a class has only named instances and provide a global point of access to them
+provide a factory of singletons
+
+Prototype
+a fully initialized instance to be copied or cloned
+decide wheter to use shallow copy or deep copy approach to creating new objects from a 'skeleton'
+
+Builder
+separates object construction from its representation
+
+Object Pool
+manage aquisition (allocation) of resources by recycling objects that drops from use
+
+Dependency Injection/Inversion of Control
+let give a class accept an object it requires instead of creating it directly
+
+Adapter/Wrapper/Translator
+match incompatible interfaces of different classes
+
+Bridge/Handle/Body
+separates an object's interface from its implementation
+decouple an abstraction from its implementation
+
+Composite
+a tree structure of simple and composite objects
+build objects as a tree hierarchy and treat them uniformly to facilitate recursive structure access
+
+Decorator/Wrapper
+add responsibilities to objects dynamically at runtime
+
+Facade
+a single class with a unified interface that represents an entire subsystem
+
+Flyweight
+a fine-grained instance used for efficient sharing
+support efficient sharing to large number of similar objects
+
+Private Class Data
+restricts accessor or mutator access
+provide a 'final after constructor' feature
+
+Proxy/Surrogate/Placeholder
+an object representing another object
+control access to an object by creating a surrogate one
+
+Extension Objects
+add a new interface to the object at runtime
+
+Marker/Marker Interface
+empty interface to associate metadata with a class
+
+Module
+group several related globally used elements (classes, singletons, methods) into a single conceptual entity
+
+Twin
+allows modelling of multiple inheritance in programming languages that do not support this feature
+
+Chain of Responsibility
+a way of passing a request between a chain of objects
+
+Command/Action/Transaction
+encapsulate a command request as an object
+
+Interpreter
+a way to include grammar language elements in a program
+
+Memento
+capture and restore an object's internal state
+create an archived object with another object's internal state without volation of encapsulation
+
+Null Object
+designed to act as a default value of an object
+provide a default object to avoid null pointer exceptions
+
+Mediator
+defines simplified communication between classes
+provide a middle-man class to simplify communication between classes by loosely-coupling
+
+Observer/Publish-subscribe
+a way of notifying change to a number of classes
+provide a many-to-1 relation to simplify communication between classes by loosely-coupling
+
+State
+alter an object's behaviour when its state changes
+
+Strategy
+encapsulates an algorithm inside a class
+encapsulate a family of algorithms and make them interchangeable to allow them vary independently
+
+Template Method
+defer the exact steps of an algorithm to a subclass
+provide possible alteration to some part of the algorithm
+in a complex sorting algorithm compare() method differs (ascending or descending order)
+abstract class provide abstract methods, descending classes provide variety
+
+Iterator
+sequentially access the elements of a collection
+sequentially access a collection in a read-only mode without exposing its underlying implementation
+
+Visitor
+defines a new operation to a class without change
+unlike Iterator, its for traversing any data structure in some order
+
+Servant/Helper Class/Utility Class
+define common functionality for a group of classes
+
+Money/Quantity
+Range of Values
+
+
+-----------------------------
+
+
+Creational:
+
+Singleton - a class that has only one instance with a global access point
+Factory method (Virtual constructor) - create an instance based on derived classes
+Prototype - create a fully initialized (cloned) instance
+Builder - separates object construction from its representation
+Object pool - manage aquisition (allocation) of resources by recycling objects that drops from use
+Multiton (Registry of singletons) - use singleton's factory
+Dependency injection (Inversion of control) - let give a class accept an object it requires instead of creating it directly
+Abstract factory (Kit) - create factory of factories
+Structural:
+
+Adapter (Wrapper, Translator) - match incompatible classes interfaces
+Bridge (Handle, Body) - decouple an abstraction from its implementation
+Composite - build objects as a tree hierarchy and treat them uniformly
+Decorator (Wrapper) - add responsibilities to objects dynamically (at runtime)
+Facade - provide a unified interface to an entire subsystem
+Proxy (Surrogate, Placeholder) - control access to an object by creating a surrogate one
+Flyweight - support efficient sharing to large number of similar objects
+Private class data - provide a 'final after constructor' feature
+Extension objects - add a new interface to the object at runtime
+Behavioral:
+
+Chain of responsibility - pass a request between a chain of objects
+Command (Action, Transaction) - encapsulate a request as an object
+Interpreter - provide a way to interpret grammar languages
+Iterator - sequentially access a collection without exposing its underlying implementation
+Mediator - simplify communication between classes by loosely-coupling
+Memento - create an archive object with another object's internal state
+Null object - provide a default object to avoid NPE's
+Observer - notify a change to a number of classes immediately (one-to-many dependency)
+State - alter an object's behavior when its state changes
+Strategy - encapsulate a family of algorithms and make them interchangeable to allow them vary independently
+Template method - redefine certain steps of an algorithm without changing its structure by deferring some steps to subclasses
+Visitor - define a new operation without changing the classes of the elements on which it operates
+
+

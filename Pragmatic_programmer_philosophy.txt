@@ -1,0 +1,138 @@
+What makes a pragmatic programmer?
+    > early adopter/fast adapter
+    > inquisitive
+    > critical thinker
+    > realistic
+    > jack of all trades
+
+
+Tip 01: Care about your craft.
+Tip 02: Think! About your work.
+Tip 03: Provide options, don't make lame excuses.
+Tip 04: Don't live with broken windows.
+Tip 05: Be a catalyst for change.
+Tip 06: Remember the big picture.
+Tip 07: Make quality a requirements issue.
+Tip 08: Invest regularly in your knowledge portfolio.
+Tip 09: Critically analyze what you read and hear.
+Tip 10: It's both what you say and the way you say it.
+Tip 11: DRY - Don't Repeat Yourself.
+Tip 12: Make it easy to reuse.
+Tip 13: Eliminate effects between unrelated things.
+Tip 14: There are no final decisions.
+Tip 15: Use tracer bullets to find the target.
+Tip 16: Prototype to learn.
+Tip 17: Program close to the problem domain.
+Tip 18: Estimate to avoid surprises.
+Tip 19: Iterate the schedule with the code.
+Tip 20: Keep knowledge in plain text.
+Tip 21: Use the power of command shells.
+Tip 22: Use a single editor well.
+Tip 23: Always use source code control system.
+Tip 24: Fix the problem, not the blame.
+Tip 25: Don't panic. (the first rule of debugging)
+Tip 26: 'SELECT' isn't broken.
+Tip 27: Don't assume it - prove it.
+Tip 28: Learn a text manipulation language.
+Tip 29: Write code that writes code.
+Tip 30: You can't write perfect software.
+Tip 31: Design with contracts. (preconditions, postconditions, class invariants)
+Tip 32: Crash early.
+Tip 33: If it can't happen, use assertions to ensure that it won't.
+Tip 34: Use exceptions for exceptional problems.
+Tip 35: Finish what you started.
+Tip 36: Minimize coupling between modules. (the Law of Demeter)
+Tip 37: Configure, don't integrate.
+Tip 38: Put abstractions in code details in metadata.
+Tip 39: Analyze workflow to improve concurrency.
+Tip 40: Design using services.
+Tip 41: Always design for concurrency.
+Tip 42: Separate views from models.
+Tip 43: Use Blackboards to coordinate workflow.
+Tip 44: Don't program by coincidence.
+Tip 45: Estimate the order of your algorithms.
+Tip 46: Test your estimates.
+Tip 47: Refactor early, refactor often.
+Tip 48: Design to test.
+Tip 49: Test your software or your users will.
+Tip 50: Don't use wizard code you don't understand.
+Tip 51: Don't gather requirements - dig for them.
+Tip 52: Work with a user to think like a user.
+Tip 53: Abstractions live longer than details.
+Tip 54: Use a project glossary.
+Tip 55: Don't think outside the box - find the box.
+Tip 56: Listen to nagging doubts - start when you're ready.
+Tip 57: Some things are better done than described.
+Tip 58: Don't be a slave to formal methods.
+Tip 59: Expensive to do not produce better design.
+Tip 60: Organize around functionality, not job functions.
+Tip 61: Don't use manual procedures.
+Tip 62: Test early. Test often. Test automatically.
+Tip 63: Coding ain't done' til all the tests run.
+Tip 64: Use saboteurs to test your testing.
+Tip 65: Test state coverage, not code coverage.
+Tip 66: Find bugs once.
+Tip 67: Treat English as just another programming language.
+Tip 68: Build documentation in, don't bolt it on.
+Tip 69: Gently exceed your users' expectations.
+Tip 70: Sign your work.
+
+
+How does duplication arise?
+    > imposed duplication - the environment seems to require duplication
+        >> multiple representations of information
+        >> documentation of code
+        >> language issues
+    > inadvertent duplication - developers don't realize that they are duplicating information
+        >> unnormalized data (design issue)
+        >> elements that are mutually dependent (length of a point can be computed, do not need a field of itself)
+        >> performance reasons (i.e. caching data; localize impact of duplication)
+    > impatient duplication - developers get lazy and duplicate because it seems easier
+        >> 'shortcuts make for long delays'
+    > interdeveloper duplication - multiple people duplicate information
+        >> communication between developers
+        >> Pragmatic Teams
+
+
+Aspect-oriented programming (AOP) lets you express in one place behavior that would otherwise be distributed throughout your source code.
+
+Two or more things are orthogonal if changes in one do not affect any of the others. (...) With DRY, you're looking to minimize duplication within a system, whereas with orthogonality you reduce the interdependency among the system's components.
+
+
+Coding orthogonal:
+    > keep your code decoupled (consider Law of Demeter)
+    > avoid global data (be aware of Singletons)
+    > avoid similar functions (use Strategy pattern)
+
+
+The problem is that critical decisions aren't easily reversible.
+
+Liskov substitution principle: Subclasses must be usable through the base class interface without the need for the user to know the difference.
+Banana problem: I know how to spell banana but I don't know when to stop.
+Heisenbug: debbuging that changes the behavior of the system being debugged.
+
+
+Nest allocations (deadlock avoiding):
+    > deallocate resources in the opposite order to that in which you allocate them
+    > resources in different places always allocate in the same order
+
+
+The Law of Demeter for functions states that any method of an object should call only methods belonging to.
+
+
+What to test?
+	> unit testing (a code that exercises a module)
+	> integration testing (how entire subsystem honors their contract)
+	> validation and verification (does it meet the functional requirements?)
+	> resource exhaustion, errors and recovery (how system will behave under real-world conditions?)
+	> performance testing (under real-world conditions with expected scalability)
+	> usability testing (with real users, under real environmental conditions)
+
+How to test?
+	> regression testing (compares the output of the current test with previous values)
+	> test data (real-world and synthetic data)
+	> exercising GUI systems (consider specialized testing tools)
+	> testing the tests (introducing bugs on purpose)
+	> testing thoroughly (coverage analysis)
+	
+

@@ -1,0 +1,168 @@
+$ cat > hello.sh                   # creating a shell script
+$ echo 'Hello, World!'             # use CTRL+D to quit and save
+$ sudo chmod u+x hello.sh
+$ bash hello.sh                    # choosing interpreter BASH (Bourne-Again SHell)
+
+
+#!/bin/bash                        # SheBang, hashbang line; hash '#', bang '!'
+$ echo $PATH
+$ pwd                              # print working directory
+$ export PATH=$PATH:~/scripts
+$ echo $SHELL                      # for further cmds it is assumed that SHELL=/bin/bash
+
+
+#!/bin/bash
+echo "What's your name, stranger?"
+read name                          # reading user input
+echo "Hello, $name"                # dereference operator
+
+
+age=27                             # integer
+letter='c'                         # character
+color='blue'                       # string
+readonly PI=3.14159                # constant floating-point number
+
+
+TODAY=$(date)                      # command substitution (storing command result)
+TODAY=`date`                       # ditto, using back quotes (backticks), old approach
+$ echo "Hello, $(whoami)"          # using CS in a shell
+
+
+#!/bin/bash
+echo -n "Please enter a filename:"
+read filename
+n_lines=$(wc -l < $filename)       # stream redirection
+echo "$n_lines lines in $filename"
+
+
+#!/bin/bash
+nlines=$(wc -l < $1)               # positional argument $1, the first BASH argument
+echo "$nlines lines in $1"         # $0 - name of the bash script
+$ ./count_lines.sh /etc/group      # $n - the n-th argument
+$ 83 lines in /etc/group
+
+
+#!/bin/bash
+find / -iname $1 2> /dev/null      # location of the file pointed by $1
+$ ./find.sh boot.log
+$ /var/log/boot.log
+
+
+#!/bin/bash
+echo "Built-in special BASH variables:"
+echo "Name of the script: $0"                              # $0
+echo "Positional argument no. 2: $2"                       # $2
+echo "Total number of arguments: $#"                       # $#
+echo "Values of all the arguments: $@"                     # $@
+echo "Process ID (PID) of the current shell: $$"           # $$
+echo "Exit status of the last executed command: $?"        # $?
+echo "PID of the last executed command: $!"                # $!
+
+
+file=("f1" "f2" "f3.txt" "4")      # an array
+$ echo ${files[0]}                 # echoing first element
+$ echo ${files[*]}                 # echoing all elements
+$ echo ${#files[@]}                # size of the array
+files[0]="a.txt"                   # update
+distros=("Ubuntu" "Fedora")
+distros+=("Kali")                  # appending operator
+num=(1 2 3 4 5)
+unset num[2]                       # delete
+user=("john" 23 "sudo" 0.5)
+unset user                         # delete array
+
+
+#!/bin/bash
+my_string="Ubuntu;Linux Mint;Debian;Arch;Fedora"
+# tr - translate; it'll retain space delimiter for array
+my_array=($(echo $my_string | tr ";" "\n"))
+# IFS - Internal Field Separator (delimiter); an alternative:
+# IFS=';' read -ra my_array << "$my_array"
+for i in "${my_array[@]}"
+do
+    echo $i
+done
+
+
+# BASH arithmetic operators:
+# +            addition
+# -            subtraction
+# *            multiplication
+# /            integer division (DIV)
+# %            remainder, modulo (MOD)
+# **           power, exponentiation
+
+
+#!/bin/bash
+fs1=$(du -b $1 | cut -f1)          # pipe redirection
+fs2=$(du -b $2 | cut -f1)
+echo "File size of $1 is: $fs1"
+echo "File size of $2 is: $fs2"
+total=$(($fs1 + $fs2))             # $((arithmetic_operation))
+echo "Total size is: $total"
+$ ./addition.sh /etc/passwd /etc/group
+
+
+#!/bin/bash
+GIGA=$1
+MEGA=$(($GIGA * 1024))
+KILO=$(($GIGA * 1024 * 1024))      # $MEGA * 1024
+BYTES=$(($KILO * 1024))
+echo "MB: $MEGA"
+echo "KB: $KILO"
+echo "B: $BYTES"
+
+
+div=$((20/4))                      # 5
+div=$((5/2))                       # 2
+div=$((echo "5/2" | bc -l))        # 2.50000000000000000000
+div=$((echo "scale=1; 5/2" | bc))  # 2.5
+div=$((bc <<< 'scale=2; 5/2'))     # 2.50
+div=$((bc -l <<< 's(pi+0.01)'))    # .00999983333416666468
+# bc::s() is sine() function
+# <<< is a Here String; bash-specific redirection operator; 
+# 3-angle-brackets redirection is supported by bash, ksh, zsh; not by sh (dash)
+
+
+#!/bin/bash
+C=$1
+F=$(echo "scale=2; $C*(9/5)+32 | bc -l")
+echo "Celsius: $C; Fahrenheit: $F"
+
+
+distro="Ubuntu"
+echo ${#distro}                    # string length
+str1="hand"
+str2="book"
+str3=$str1$str2                    # string concatenation
+str="Bash is Cool"
+$ word="Cool"
+$ expr index "$str" "$word"        # substring index
+$ 9
+foss="Fedora is a free operating system"
+$ echo ${foss:0:6}                 # substring extraction
+$ Fedora
+$ echo {foss/Fedora/Ubuntu}        # substring replacement
+$ Ubuntu is a free OS
+fact="Sun is a big star"
+$ echo ${fact/big}                 # substring deletion
+$ Sun is a star
+cell="112-358-1321"
+$ echo ${cell/-}                   # deleting first occurrence
+$ 112358-1321
+cell=${cell//-}                    # deleting all occurrences
+$ echo $cell
+$ 1123581321
+legend="john nash"
+$ echo ${legend^^}                 # uppercase
+$ JOHN NASH
+$ echo ${legend^}                  # capitalize
+$ John nash
+actor="JULIA ROBERTS"
+$ echo ${actor,,}                  # lowercase
+$ julia roberts
+$ echo ${actor,}                   # first letter to lowercase
+$ jULIA ROBERTS
+
+
+

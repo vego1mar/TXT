@@ -1,0 +1,431 @@
+This is the Unix philosophy: Write programs that do one thing and do it well. Write programs to work together. Write programs to handle text streams, because that is a universal interface.
+
+Pike's note: Data structures, not algorithms, are central to programming.
+Postel's Prescription: Be generous in what you accept, rigorous in what you emit.
+Ken Thompson: 'When in doubt, use brute force'.
+Moore's law: you can collect a 26% performance gain just by buying new hardware in six months.
+When filtering, never throw away information you don't need to.
+SPOT - Single Point of Truth
+Law of Software Envelopment (Zawinski's Law): 'Every program attempts to expand until it can read mail. Those programs which cannot so expand are replaced by ones which can'.
+
+robustness - performing well under unexpected conditions which stress the designer's assumptions and normal conditions
+byte-stuffed - payloads shipped either with a preceding length in octets or with a terminator that is the line ".\r\n"
+invariant - a property of software design that is preserved by every operation in it
+race condition - correct behavior of the system relies on two independent events (in order) without ensuring that
+IPC - inter-process communication
+macro expansion - replacing (expanding) one string to another one like in C preprocessor
+metaclass hacking (introspection) - code for analyzing the shape and members of the initializer, metacode
+CGI - Common Gateway Interface
+run-control files - a file of declarations or commands associated with a program that it interprets in startup
+harness program - a wrapper whose job is to make some special sort of resource available to the program it calls
+curses (program) - program mixing command-line and visual interfaces, with commands bounded to keystrokes
+infectious license - requires that any derivative work of the licensed software also be placed under its terms
+cruft - badly designed, unnecessarily complicated, or unwanted code or software
+
+
+KISS - Keep It Simple, Stupid! (hymnbook):
+Rule of Modularity: Write simple parts connected by clean interfaces.
+Rule of Clarity: Clarity is better than cleverness.
+Rule of Composition: Design programs to be connected to other programs.
+Rule of Separation: Separate policy from mechanism; separate interfaces from engines.
+Rule of Simplicity: Design for simplicity; add complexity only where you must.
+Rule of Parsimony: Write a big program only when it is clear by demonstration that nothing else will do.
+Rule of Transparency: Design for visibility to make inspection and debugging easier.
+Rule of Robustness: Robustness is the child of transparency and simplicity.
+Rule of Representation: Fold knowledge into data so program logic can be stupid and robust.
+Rule of Least Surprise: In interface design, always do the least surprising thing.
+Rule of Silence: When a program has nothing surprising to say, it should say nothing.
+Rule of Repair: When you must fail, fail noisily and as soon as possible.
+Rule of Economy: Programmer time is expensive; conserve it in preference to machine time.
+Rule of Generation: Avoid hand-hacking; write programs to write programs when you can.
+Rule of Optimization: Prototype before polishing. Get it working before you optimize it.
+Rule of Diversity: Distrust all claims for 'one true way'.
+Rule of Extensibility: Design for the future, because it will be here sooner than you think.
+Rule of Minimality: Choose the shared context you want to manage, and build your programs as small as those boundaries will allow.
+
+
+The elements of operating-system style:
+unifying idea - 'everything is a file' and pipe metaphor
+multitasking capability - support for multiple concurrent processes; cooperative or preemptive
+cooperating processes - Unix has inexpensive process-spawning and easy inter-process communication (IPC)
+internal boundaries - memory management, privileged groups for users, confinement of security-critical functions
+file attributes and record structures - Unix has none due to their cumbersome
+binary file formats - Unix discourages to use them
+preffered user interface style - Unix has a tradition focusing toward CLIs
+intended audience - in Unix the programmer knows best
+entry barriers to development - Unix facilitate casual programming
+
+Modularity issues:
+Brook's Law: adding programmers to a late project makes it later (slower, less efficient, more error-prone code)
+Hatton's model: bug density is not linear to bug load (chunks to remember have a multiplicative effect on efficiency) 
+Modularity = compactness + orthogonality + SPOT rule
+Compactness - a design can fit inside a human being's head (Does an experienced user normally need a manual?)
+Orthogonality - operations do not have side effects (each action changes just one thing without affecting others)
+Strong Single Center - organize code around a strong core algorithm with a formal definiton of the problem, avoid heuristics
+Detachment - abstract, simplify, generalize; attachment leads to suffering, detachment provide enlightenment
+'...constraint has encouraged not only economy, but also a certain elegance of design'
+The thin-glue layer principle: top-down logic have to be matched with bottom-up primitives with a layer of glue logic
+'If you know what you're doing, three layers is enough; if you don't, even seventeen levels won't help.'
+All OO languages show some tendency to suck programmers into the trap of excessive layering.
+
+
+Textuality issues:
+Designing a textual protocol tends to future-proof your system.
+General file formats: passwd
+Data file metaformats: DSV, RFC 822, cookie-jar, record-jar, XML, INI
+General application protocols: SMTP, POP3, IMAP
+Application protocol metaformats: HTTP, IPP, BEEP, XML-RPC, SOAP, Jabber
+Creating a single tool to do the compression job well is more effective than ad-hoc compression on parts of the file.
+Compression does some damage to transparency.
+
+
+Unix textual file formats conventions:
+one record per newline-terminated line, if possible
+less than 80 characters per line, if possible
+use # as an introducer for comments
+support the backslash convention
+in one-record-per-line formats, use colon or any run of whitespace as a field separator
+do not allow the distinction between tab and whitespace to be significant
+favor hex over octal
+for complex records, use a 'stanza' format: multiple lines per record, with a record separator line of %%\n or %\n
+in stanza formats, either have one record field per line or use a record format resembling RFC 822 electronic-mail headers, with a colon-terminated field-name keywords leading fields
+in stanza formats, support line continuation
+either include a version number or design the format as self-describing chunks independent of each other
+beware of floating-point round-off problems
+don't bother compressing or binary-encoding just part of the file
+
+
+Transparency issues:
+transparency - it is possible to form a simple mental model of its behavior that is actually predictive for all or most cases
+discoverability - it included features that are designed to help you build in your mind a correct mental model of doing
+'Discoverability is about reducing barriers to entry; transparency is about reducing the cost of living in the code.'
+The Zen of Transparency: if you want transparent code, the most effective route is simply not to layer too much abstraction
+
+
+Multiprogramming issues:
+Unix program-modularization technique is to split large programs into multiple cooperating processes.
+It does this by: making process-spawning cheap, providing easy communication, encouraging textual data formats
+Process partitioning: client/server pair or threads?
+
+
+Taxonomy of Unix IPC methods:
+handing off tasks to specialist programs - shelling out; no handshake with the parent
+pipes, redirection and filters - connecting stdout with stdin between programs; stages in a pipeline run concurrently
+wrappers - creates a new interface for a called program or specializes it
+security wrappers - a script that may call a gatekeeper program to check some sort of credential
+Bernstein chaining - a specialized security-wrapper; a pipeline with each successive stage replaced by the previous one
+slave processes - child program accepting data from/return to their callers through pipes connected to stdin/stdout
+peer-to-peer inter-process communication - P2P channels with bidirectional data flow
+    > tempfiles - problems: garbage lying around, names collision, file privileges
+    > signals - form of a soft interrupt; signal handlers are executed asynchronously; program notification facility
+    > system daemons and onventional signals - SIGTERM as a 'terminate'; deamons as backgrounded servers
+    > sockets - BSD invention of a bidirectional byte stream, both sequenced and reliable
+    > shared memory - producer and consumer on the same hardware; access to the same physical memory is faster
+
+
+Obsolescent Unix IPC methods to avoid:
+System V IPC - message-passing facilities (shared protocols exchanging up to 8K binary messages)
+Streams (STREAMS) - full-duplex interface between program and driver; 'line disciplines' successor
+Remote Procedure Calls (RPCs) - used for NFS but not readily discoverable with 'richer' interfaces (Windows COM)
+threads - a bad substitute for lightweight processes with their own address spaces
+
+
+Minilanguages issues:
+Domain-specific language have been called 'little languages' or 'minilanguages' in the Unix world.
+Taxonomy (from declarative to imperative): data formats, minilanguages, interpreters
+Turing-complete language - with conditionals, loops (or recursion); theoretically it can be used for general-purpose
+Examples: regular expressions, XSLT, awk, PostScript, bc, dc, Emacs Lisp, JavaScript
+Designing problems: complexity, to extend or to embed, custom grammar or macros, language or application protocol
+
+
+Generation issues:
+Data-Driven Programming (DDP) - changing the logic of the program by editing the data structure
+DDP is often confused with object orientation and with writing state machines.
+Rule of DDP: always push problems upstream; do not hand-patch bits that should be generated correctly
+Examples of this domain problem: spam filtering, metaclass hacking
+
+
+Configurations issues:
+What should be configurable? The gut-level Unix answer is 'everything'.
+1. Don't provide configuration switches for what you can reliably detect automatically.
+2. Users should not see optimization switches.
+3. Don't do with a configuration switch what can be done with a script wrapper or a trivial pipeline.
+
+
+Configuration control information startup-time environment:
+run-control files under /etc
+system-set environment variables
+run-control files ('dotfiles') in the user's $HOME directory
+user-set environment variables
+switches and arguments passed to the program on the command line
+
+
+The normal style rules for run-control files syntaxes:
+support explanatory comments, and lead them with #
+don't make insidious whitespace distinctions
+treat multiple blank lines and comment lines as a single blank line
+lexically treat the file as a simple sequence of whitespace-separated tokens, or lines of tokens
+but, support a string syntax for tokens with embedded whitespace
+support backslash syntax for embedding unprintable and special characters in strings
+
+
+Where to use environment variables?
+a value varies across several contexts that shared dotfiles, or a parent needs to pass info to multiple child processes
+a value varies too often for dotfiles, but doesn't change on every startup
+a process-unique override needs to be expressed in a way that doesn't require the command-line invocation to be changed
+
+
+Command-line options styles:
+the original Unix style - the single-letter options; -a
+the GNU style - double-hyphen option leader; --all
+the X toolkit style - a single hyphen and keyword option; -display
+
+
+Interface designs:
+concision - length and complexity of actions required to do a transaction has a low upper bound (keystrokes etc.)
+expressiveness - how readily can it be used to command a wide variety of actions
+ease - how many things (command, gestures etc.) the user has to remember specifically to support using the UI
+transparency - how few things the user has to remember about the state of his problem/data while using the UI
+scriptability - the ease with which it can be manipulated by other programs
+intuitiveness - an intuitive UI is: discoverable, transparent in use, obeys the Rule of Least Surprise
+
+
+Unix interface design patterns (non-GUI):
+The Filter Pattern - takes data from stdin, transforms them, sends the result to stdout; grep
+The Cantrip Pattern - no input, no output, just invocation and a numeric exit status; clear
+The Source Pattern - no input, output controlled by startup conditions; ls
+The Sink Pattern - consumes input but gives no output; sort (sponge - must read entire input before process it); lpr
+The Compiler Pattern - no input or output, only stderr; takes files names, transforms them, emits files; gzip
+The ed Pattern - interactive; takes a file, modifies it; command-lines at input, info for user at output; sed
+The Rougelike Pattern - designed for consoles and terminals, not echoeing keystrokes; vi
+The 'Separated Engine and Interface' Pattern - equivalent of model-view-controller pattern for GUIs
+    > possibility: use minilanguage for controlling the view to deffer coupling of a controller
+    > Configurator/Actor pair; fetchmail and fetchmailconf
+    > Spooler/Daemon pair; serialized access to a shared resource in a batch mode; lpr and lpd
+    > Driver/Engine pair; UI supplies commands to engine and interpret its output; interactivity, standalone; gs and gv
+    > Client/Server pair; server is a background-working, non-interactive, non-UI deamon (mediator); ftp and ftpd
+The CLI Server Pattern - used by a harness program (wrapper for job on available resources)
+    > foregrounded: CLI for reading from stdin and writing to stdout (pipeline-like)
+    > backgrounded: connects stdin and stdout to a specified TCP/IP service port
+    > examples: POP, IMAP, SMTP, HTTP
+The Polyvalent-Program Pattern - introduce different interfaces types for different users types; GIMP
+
+
+Optimization issues:
+The most effective way to optimize your code is to keep it small and simple. Premature optimization is a plague.
+1. Don't just do something, stand there! (Moore's law appliance)
+2. Measure before optimizing (profiler appliance like gprof)
+3. Throughput vs latency (batching operations, overlapping operations, caching operations results)
+
+
+Complexity issues:
+as simple as possible, but no simpler
+problems: complexity is harder to think about, to test, to debug, to maintain, to learn and use
+measures (sources) of complexity: implementation, interface, codebase size
+faces of complexity: manularity trap, blivet trap, adhocity trap
+kinds of complexity: accidental, optional, essential
+implementation complexity - the degree of difficulty a programmer will experience in attempting to understand a program
+interface complexity - mnemonic load pushed toward customers and users
+codebase size - the total number of lines of code in the system
+manularity trap - two measureses of complexity vary in opposite directions
+blivet trap - cascade of implementation complexity caused by using extremely dense and complicated techniques
+adhocity trap - a complex but unified way to solve problems in favor of duplicative ad-hoc code solving individual ones
+historical note: MIT and New Jersey philosophy (interface vs implementation complexity); 'worse is better'
+essential complexity - sharp point past which it's not possible to trade away features for simplicity
+accidental complexity - someone didn't find the simplest way to implement a specified set of features; redesign to eliminate
+optional complexity - is tied to some desirable feature; change the objective to eliminate
+
+
+Complexity designs (for editors):
+plain-text editing
+rich-text editing
+syntax awareness
+output parsing of batch command output
+interaction with helper subprocesses that persist and maintain state between editor commands
+Zawinski's Law and Rule of Minimality
+
+
+Languages issues:
+aliasing bug, stale pointer, arena corruption, memory leak, buffer overflow, stack smash
+fandango on core, heap trashing, secondary damage
+    > why not C? (require own memory management which takes up to 40% of programmers time)
+    > choosing a language (C, C++, Shell, Perl, TCL, Python, Java, Emacs Lisp)
+    > choosing an X toolkit (Tk, GTK, Qt, wxWidgets)
+
+
+Tools issues:
+a developer-friendly OS: tools that automate many little tasks that would distract you from concentrating on design
+    > choosing an editor (vi, emacs, IDE)
+    > special-purpose code generators (yacc, lex, bison, flex)
+    > automating your recipes (make, makefile, autoconf)
+    > version-control systems (by hand, VCS, SCCS, RCS, SVN, Aegis, BitKeeper)
+    > runtime debugging (gdb)
+    > profiling (gprof)
+    > combining tools (emacs with gdb etc.)
+
+
+Reuse issues:
+Remember the Rule of Economy. Re-inventing fire and the wheel for every new project is terribly wasteful.
+The Tale of J. Random Newbie: Transparency as the Key to Reuse
+Object-code-only components destroy the transparency of a software system.
+A lesson Unix programmers have learned through decades of constant change is that source code lasts, object code doesn't. 
+Open source is what happens when code reuse gets a flag and an army.
+The mantra is ./configure; make; make install.
+The best things in life are open: GIMP, GNOME, KDE, Python, Linux, PostgreSQL, XFree86, InfoZip.
+Where to look?: SourceForge, ibiblio, Freshmeat
+Standard open source licenses: MIT, BSD, artistic license, GPL, LGPL, MPL
+
+
+What qualifies as open source? 
+    > an unlimited right to copy be granted
+    > an unlimited right to redistribute in unmodified form be granted
+    > an unlimited right to modify for personal use be granted
+
+
+Portability issues:
+POSIX - an attempt to promulgate a way of referring to a standard operating system interface
+IETF: 'We reject kings, presidents, and voting. We believe in rough consensus and running code'
+RFC - Requests for Comment; a stage that IETF standard must pass through; suggests standards, philosophy, jokes
+The most effective step you can take to ensure the portability of your code is to not rely on proprietary technology.
+
+
+Programming for portability:
+    > chose of a language (C, C++, Shell, Perl, TCL, Python, Java, Emacs Lisp)
+    > avoiding system dependencies (syslog tool instead of opening logfiles manually etc.)
+    > tools (expectance of configure-make-make install)
+
+
+Specifications as DNA, code as RNA:
+Unix tradition makes it easier to discard and replace small pieces of systems without losing everything.
+An application which got an unexpected result from a documented interface was either broken or had discovered a bug. 
+Practice defensive design — build on open source and don't get stranded!
+
+
+Internationalization issues:
+    > separate the message base from the code (use dictionaries through gettext program)
+    > make applications natively speak UTF-8
+    > beware of character ranges in regular expressions (like [a-z] for German words)
+
+
+Documentation issues:
+Unix-community practice since the mid-1990s: ‘everything is HTML, all references are URLs’
+WYSIWYG style: DTP programs and word processors; they have GUIs intended to resemble printed version closely possible
+Markup-centered systems: source can be modified with an ordinary text editor; troff markup formatter
+Presentation markup - instructions about how a document should look
+Structural markup - instructions about how it's organized and what it means
+Documentation formats: groff (ms, mm, mdoc), man (nroff), TeX (LaTeX), texinfo, POD (Perl), HTML, DocBook (SGML, XML)
+
+
+Unix documentation cultural style:
+written by technical writers — the knowledgeable writing for the knowledgeless
+Unix manual pages traditionally have a section called BUGS.
+Read every word carefully, because whatever you want to know will probably be there, or deducible from what's there.
+Read every word carefully, because you will seldom be told anything twice.
+
+
+DocBook:
+DocBook's older brother: SGML (Standard Generalized Markup Language)
+A DocBook document is a piece of XML (a dialect, large DTD) that uses XML tags for structural markup.
+DTD - Document Type Definitions; examples: TEI, XHTML
+DTD tells markup formatter what sorts of elements can be in the document structure and in what order they can appear.
+validating parser - a front-end of the DocBook formatter; checks DTD's structural rules
+formatter's input: DTD, stylesheet
+formatter consists of: validating parser, formatter back-end
+toolchain - formatter with its input
+PDF convertion raw bucket chain: stylesheet -> FO (Formatting Objects) -> PostScript
+PDF conversion with PassiveTex: xsltproc -> FO -> TeX -> DVI (DeVice Independent) -> PDF
+PDF conversion with Apache's FOP (FO-to-PostScript): libxslt -> FO -> FOP -> PDF
+Migration tools (from old-style presentation markup to DocBook): texinfo, POD, LaTeX (TeX4ht), man (doclifter), troff
+Editing tools (for DocBook): LyX, TeXMacs, vi, emacs
+Related standards: ScrollKeeper, Open Metadata Format
+
+
+Best practices for writing Unix documentation:
+    > don't dumb it down (dumbing documentation down is very different from making it accessible)
+    > never omit functional details (unanticipated problems cost you credibility and users)
+    > try to hit a happy medium in information density (too low is as bad as too high)
+    > if project is of any significant size ship: man pages, tutorial manuals, FAQ (Frequently Asked Questions), website
+    > include the standard metainformation files as in open-source practices (like README)
+    > maintain your document masters in XML-DocBook, even for man pages
+    > ship the XML masters
+    > generate XHTML from your masters and make it available from your project's web page
+
+
+Open source issues:
+Linus Torvalds: 'Software is like sex — it's better when it's free.'
+The reason for frequent releases is to shorten and speed the feedback loop connecting user population to developers. 
+Abandoning secrecy in favor of process transparency and peer review made possible to alchemy became chemistry.
+
+
+The rules of open source:
+    > let the source be open
+    > release early, release often
+    > reward contribution with praise
+
+
+Good patching practice:
+    > do send patches, don't send whole archives or files (diff, patch)
+    > send patches against the current version of the code
+    > don't include patches for generated files
+    > don't send patches bands that just tweak RCS or SCCS $-symbols
+    > do use -c or -u format, don't use the default -e format
+    > do include documentation with your patch
+    > do include an explanation with your patch
+    > do include comments in your code
+    > don't take it personally if your patch is rejected
+
+
+Good project- and archive-naming practice:
+    > use GNU-style names with a stem and major.minor.patch numbering
+    > but respect local conventions where appropriate
+    > try hard to choose a name prefix that is unique and easy to type
+
+
+Good development practice:
+    > don't rely on proprietary code
+    > use GNU autotools
+    > test your code before release
+    > sanity-check your code before release
+    > spell-check your documentation and README's before release
+    > recommended C/C++ portability practices
+        >> use function prototypes
+        >> do not assume compiler-specific features (like gcc -pipe option)
+        >> code required for portability should be isolated to a single area and a single set of source files
+        >> portability layers simplify applications
+        >> always write your portability layer to select based on a feature, never based on a platform
+        >> portability choices can be made along either lines of code or compiled files
+        >> use of #ifdef and #if is permissible if well controlled but discouraged
+        >> never intrude on the namespace of any other part of the system
+        >> choose a coding standard
+
+
+Good distribution-making practice:
+    > make sure tarballs always unpack into a single new directory
+    > include a README (description, website, portability issues, important files, INSTALL, CREDIT, NEWS, mailing list)
+    > respect and follow standard file-naming practices (README, INSTALL, NEWS, HISTORY, CHANGES, LICENSE, FAQ)
+    > design for upgradability
+    > under Linux, provide RPMs
+    > provide checksums
+
+
+Good communication practice:
+    > announce to FreshMeat
+    > announce to a relevant topic newsgroup
+    > have a website
+    > host project mailing list
+    > release to major archives
+
+
+Problems in the design of Unix:
+    > a Unix file is just a big bag of bytes
+    > Unix support for GUIs is weak
+    > file deletion is forever
+    > Unix assumes a static file system
+    > the desgin of job control was badly botched
+    > the Unix API doesn't use exceptions
+    > ioctl and fcntl are an embarrassment
+    > the Unix security model may be too primitive
+    > Unix has too many different kinds of names
+    > file systems might be considered harmful
+    > towards a global Internet address space
+

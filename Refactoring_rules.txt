@@ -1,0 +1,439 @@
+
+*** Extract Method
+Type: composing method
+Problem: you have a code fragment that can be grouped together
+Solution: turn the fragment into a method whose name explains the purpose of the method
+Motivation: split too long methods that need a comment; short, well-named methods are preferable; if extraction improves clarity then do it despite the code longliness
+
+*** Inline Method
+Type: composing method
+Problem: a method's body is just as clear as its name
+Solution: put the method's body into the body of its callers and remove the method
+Motivation: nedless indirection is irritating
+
+*** Inline Temp
+Type: composing method
+Problem: you have a temp that is assigned to once with a simple expression and the temp is getting in the way of other refactorings
+Solution: replace all references to that temp with the expression
+Motivation: use it with Replace Temp with Query
+
+*** Replace Temp with Query
+Type: composing method
+Problem: you are using a temporary variable to hold the result of an expression
+Solution: extract the expression into a method
+Motivation: temps are temporary and local thus they are encouraging longer methods
+
+*** Introduce Explaining Variable
+Type: composing method
+Problem: you have a complicated expression
+Solution: put the result of the expression, or parts of the expression, in a temporary variable with a name that explains the purpose
+Motivation: break down complex expressions to be more manageable; explains what the conditions means with a well-named temps
+
+*** Split Temporary Variable
+Type: composing method
+Problem: you have a temporary variable assigned to more than once, but is not a loop variable nor a collecting temporary variable
+Solution: make a separate temporary variable for each assignment
+Motivation: temporaries that are used to hold the result of a long-winded bit of code should be set only once; using a temp for two different things is very confusing
+
+*** Remove Assignments to Parameters
+Type: composing method
+Problem: the code assigns to a parameter
+Solution: use a temporary variable instead
+Motivation: while passing parameter by value this comes down to lack of clarity since it is not reflected in the calling routine
+
+*** Replace Method with Method Object
+Type: composing method
+Problem: you have a long method that uses local variables in such a way that you cannot apply Extract Method
+Solution: turn the method into its own object so that all the local variables become fields on that object; you can the decompose the method into other methods on the same object
+Motivation: by extracting pieces out of a large method, you make things much more comprehensible
+
+*** Substitute Algorithm
+Type: composing method
+Problem: you want to replace an algorithm with one that is clearer
+Solution: replace the body of the method with the new algorithm
+Motivation: if you find a clearer way to do something, you should replace the complicated way with the clearer way
+
+*** Move Method
+Type: moving features between objects
+Problem: a method is, or will be, using or used by more features of another class than the class on which it is defined
+Solution: create a new method with a similar body in the class it uses most; either turn the old method into a simple delegation, or remove it altogether
+Motivation: classes have to much behavior or classes are collaborating too much and are too highly coupled
+
+*** Move Field
+Type: moving features between objects
+Problem: a field is, or will be, used by another class more than the class on which it is defined
+Solution: create a new field in the target class, and change all its users
+Motivation: more methods on another class using the field than the class itself; this usage may be indirect through getters and setters
+
+*** Extract Class
+Type: moving features between objects
+Problem: you have one class doing work that should be done by two
+Solution: create a new class and move the relevant fields and methods from the old class into the new class
+Motivation: a class that is too big to understand easily need to be split; a class should be a crisp abstraction, handle a few clear responsibilities
+
+*** Inline Class
+Type: moving features between objects
+Problem: a class isn't doing very much
+Solution: move all its features into another class and delegate it
+Motivation: a class is no longer pulling its weight and shouldn't be around any more
+
+*** Hide Delegate
+Type: moving features between objects
+Problem: a client is calling a delegate class of an object (A -> B,C and B <->C)
+Solution: create methods on the server to hide the delegate (A -> B <-> C)
+Motivation: encapsulation means that objects need to know less about other parts of the system; when things change, fewer objects need to be told about the change
+
+*** Remove Middle Man
+Type: moving features between objects
+Problem: a class is doing too much simple delegation (A -> B <-> C)
+Solution: get the client to call the delegate directly (A -> B,C and B <-> C)
+Motivation: when the server class is just a proxy for delegation then perhaps it's time for the client to call the delegate directly
+
+*** Introduce Foreign Method
+Type: moving features between objects
+Problem: a server class you are using needs an additional method, but you can't modify the class
+Solution: create a method in the client class with an instance of the server class as its first argument
+Motivation: this is a work-around when you cannot to get the methods moved to their proper homes
+
+*** Introduce Local Extension
+Type: moving features between objects
+Problem: a server class you are using needs several additional methods, but you can't modify the class
+Solution: create a new class that contains these extra methods; make this extension class a subclass or a wrapper of the original
+Motivation: if classes' authors failed to provide useful methods to you and you cannot modify the source then add it on your own; a local extension is a separate class, but it is a subtype of the class it is extending; by using it you keep the principle that methods and data should be packaged into well-formed units
+
+*** Self Encapsulated Field
+Type: organizing data
+Problem: you are accessing a field directly, but the coupling to the field is becoming awkward
+Solution: create getting and setting methods for the field and use only those to access the field
+Motivation: provide indirect variable access to manage with i.e. lazy initialization; access a field in a superclass that you want to override from the subclass' context
+
+*** Replace Data Value with Object
+Type: organizing data
+Problem: you have a data item that needs additional data or behavior
+Solution: turn the data item into an object
+Motivation: avoid code smell if the simple value starting to be complex
+
+*** Change Value to Reference
+Type: organizing data
+Problem: you have a class with many equal instances that you want to replace with a single object
+Solution: turn the object into a reference object
+Motivation: possible use when there are more reference objects than value objects
+
+*** Change Reference to Value
+Type: organizing data
+Problem: you have a reference object that is small, immutable, and awkward to manage
+Solution: turn it into a value object
+Motivation: possible use when working with the reference objects becomes awkward; value objects are particularly useful for distributed and concurrent systems
+
+*** Replace Array with Object
+Type: organizing data
+Problem: you have an array in which certain elements mean different things
+Solution: replace the array with an object that has a field for each element
+Motivation: use class to contain a number of different things instead of array; with an object you can use names of fields and methods to convey the information about the purpose and intension
+
+*** Duplicate Observed Data
+Type: organizing data
+Problem: you have domain data available only in a GUI control, and domain methods need access
+Solution: copy the data to a domain object; set up an observer to synchronize the two pieces of data
+Motivation: not suitable for multitiered systems like in MVC (model-view-controller) but for two-tiered approach; use either Observer design pattern or event listeners
+
+*** Change Unidirectional Association to Bidirectional
+Type: organizing data
+Problem: you have two classes that need to use each other's features, but there is only a one-way link
+Solution: add back pointers, and change modifiers to update both sets
+Motivation: you have to initially set up two classes so that one class refers to the other; set up a two-way reference using back pointers
+
+*** Change Bidirectional Association to Unidirectional
+Type: organizing data
+Problem: you have a two-way association but one class no longer needs features from the other
+Solution: drop the unneeded end of the association
+Motivation: many interdependencies lead to a highly coupled system; you should use bidirectional associations when you need to but when you don't; bidirectional associations are often a source of errors; lots of two-way links also make it easy for mistakes to lead to zombies
+
+*** Replace Magic Number with Symbolic Constant
+Type: organizing data
+Problem: you have a literal number with a particular meaning
+Solution: create a constant, name it after the meaning, and replace the number with it
+Motivation: magic numbers are nasty when you need to reference the same logical number in more than one place; if the magic number is a type code, consider using Replace Type Code with Class
+
+*** Encapsulate Field
+Type: organizing data
+Problem: there is a public field
+Solution: make it private and provide accessors
+Motivation: when you make your data public other objects can change and access data values without the owning object's knowing about it; this is seen as a bad thing because it reduces modularity of the program; on the other hand a class with only accessors is a dumb class that doesn't really take advantage of clustering data and behavior together
+
+*** Encapsulate Collection
+Type: organizing data
+Problem: a method returns a collection
+Solution: make it return a read-only view and provide add/remove methods
+Motivation: collections should use a protocol slightly different from that for other kinds of data for accessing it; a getter for a multivalued attribute should return something that prevents manipulation of the collection and hides unnecessary details about its structure; there should not be a setter for collection, rather there should be operations to add and remove elements
+
+*** Replace Record with Data Class
+Type: organizing data
+Problem: you need to interface with a record structure in a traditional programming environment
+Solution: make a dumb data object for the record
+Motivation: it is simplest to make the class look like the external record
+
+*** Replace Type Code with Class
+Type: organizing data
+Problem: a class has a numeric type code that does not affect its behavior
+Solution: replace the number with a new class
+Motivation: enumerators are always better than numbers; using type code instead of names is reducing readability and can be a source of bugs
+
+*** Replace Type Code with Subclasses
+Type: organizing data
+Problem: you have an immutable type code that affects the behavior of a class
+Solution: replace the type code with subclasses
+Motivation: the best thing to  do is to use polymorphism to handle the variant behavior; this situation usually is indicated by the presence of case-like conditional statements; such conditionals need to be refactored with Replace Conditional with Polymorphism and Replace Type Code with Subclasses is just a scaffolding move
+
+*** Replace Type Code with State/Strategy
+Type: organizing data
+Problem: you have a type code that affects the behavior of a class, but you cannot use subclassing
+Solution: replace the type code with a state object
+Motivation: choose the pattern that better fits the specific circumstances; Strategy is better for simplifying an alogorithm, and State is better for moving state-specific data; Replace Type Code with State/Strategy instead of Replace Type Code with Subclasses can be used if the type code changes during the life of the object or if another reason prevents subclassing
+
+*** Replace Subclass with Fields
+Type: organizing data
+Problem: you have subclasses that vary only in methods that return constant data
+Solution: change the methods to superclass fields and eliminate the subclasses
+Motivation: a constant method is one that returns a hard-coded value; a subclass that consists only of constant methods is not doing enough to be worth existing; Replace Subclass with Fields removes the extra complexity of the subclasses
+
+*** Decompose Conditional
+Type: simplifying conditional expressions
+Problem: you have a comlicated conditional (if-then-else) statement
+Solution: extract methods from the condition, the part, and else parts
+Motivation: complex conditional logic provides a complexity in a program; you can make your intention clearer by decomposing the block of code with a long conditionals and replacing chunks of code with a method call named after the intention of that block of code
+
+*** Consolidate Conditional Expression
+Type: simplifying conditional expressions
+Problem: you have a sequence of conditional tests with the same result
+Solution: combine them into a single conditional expression and extract it
+Motivation: it makes the check clearer by showing that you are really making a single check that's oring the other checks together; if you think the checks are really independent and shouldn't be thought of as a single check, don't do the refactoring
+
+*** Consolidate Duplicate Conditional Fragments
+Type: simplifying conditional expressions
+Problem: the same fragment of code is in all branches of a conditional expression
+Solution: move it outside of the expression
+Motivation: this makes clearer what varies and what stays the same
+
+*** Remove Control Flag
+Type: simplifying conditional expressions
+Problem: you have a variable that is acting as a control flag for a series of boolean expressions
+Solution: use a break or return instead
+Motivation: a rule of structured programming that call for routines with one entry point and one exit point leads you to very convoluted conditionals with these awkward flags in the code; such control flags are more trouble than they are worth; this is why languages have break and continue statements to get out of a complex conditional
+
+*** Replace Nested Conditional with Guard Clauses
+Type: simplifying conditional expressions
+Problem: a method has conditional behavior that does not make clear the normal path of execution
+Solution: use guard clauses for all the special cases
+Motivation: one exit point is really not a useful rule; clarity is the key principle - if the method is clearer with one exit point, use one exit point, otherwise don't; if-then-else construct communicates to the reader that the legs are equally likely and important; instead the guard clause says that this is rare, and if it happens, do something and get out; Replace Nestes Conditional with Guard Clauses often comes with reversing of the conditional expressions
+
+*** Replace Conditional with Polymorphism
+Type: simplifying conditional expressions
+Problem: you have a conditional that chooses different behavior depending on the type of an object
+Solution: move each leg of the conditional to an overriding method in a subclass; make the original method abstract
+Motivation: polymorphism allows you to avoid writing an explicit conditional when you have objects whose behavior varies depending on their types; statements that switch on type strings are much less common in an object-oriented program; clients of the class don't need to know about the subclasses, which reduces the dependencies in your system and makes it easier to update
+
+*** Introduce Null Object
+Type: simplifying conditional expressions
+Problem: you have repeated checks for a null value
+Solution: replace the null value with a null object
+Motivation: instead of asking an object what type it is and then invoking some behavior based on the answer, you just invoke the behaviour; the testing interface is an alternative to defining an isNull() method; often there is a difference between there is no customer and there is an unknown customer; sometimes null objects actually can carry data such as usage records for the unknown customer; in essence there is a bigger pattern here, called Special Case
+
+*** Introduce Assertion
+Type: simplifying conditional expressions
+Problem: a section of code assumes something about the state of the program
+Solution: make the assumption explicit with an assertion
+Motivation: with an object it may be assumed that at least one of a group of fields has a value in it; such assumptions often are not stated but can only be decoded by looking through an algorithm; sometimes the assumptions are stated with a comment; an assertion is a conditional statement that is assumed to be always true; failure of an assertion indicates programmer error; assertions act as a communication and debugging aids; assertions should never be used by other parts of the system, they are usually removed for production code
+
+*** Rename Method
+Type: making method calls simpler
+Problem: the name of a method does not reveal its purpose
+Solution: change the name of the method
+Motivation: methods should be named in a way that communicates their intention; this should replace the comment for the method; if you see a badly named method, it is imperative that you change it; if reordering parameters clarifies matters, do it; good naming is a skill that requires practice
+
+*** Add Parameter
+Type: making method calls simpler
+Problem: a method need more information from its caller
+Solution: add a parameter for an object that can pass on this information
+Motivation: often you have other alternatives to adding a parameter; long parameter lists smell bas because they are hard to remember and often involve data clumps; what are you using the information for?; perhaps you should consider Introduce Parameter Object
+
+*** Remove Parameter
+Type: making method calls simpler
+Problem: a parameter is no longer used by the method body
+Solution: remove it
+Motivation: a parameter indicates information that is needed; different values make a difference; the case to be wary of here is a polymorphic method
+
+*** Separate Query from Modifier
+Type: making method calls simpler
+Problem: you have a method that returns a value but also changes the state of an object
+Solution: create two methods, one for the query and one for the modification
+Motivation: it is a good idea to clearly signal the difference between methods with side effects and those without; when you have a function that gives you a value and has no observable side effects, you have a very valuable thing; when dealing with concurrency issues it is still valueable to have separate query and modifier operations, however, you need to retain a third synchronized method that does both
+
+*** Parameterize Method
+Type: making method calls simpler
+Problem: several methods do similar things but with different values contained in the method body
+Solution: create one method that uses a parameter for the different values
+Motivation: such a change removes duplicate code and increases flexibility, because you can deal with other variations by adding parameters
+
+*** Replace Parameter with Explicit Methods
+Type: making method calls simpler
+Problem: you have a method that runs different code depending on the values of an enumerated parameter
+Solution: create a separate method for each value of the parameter
+Motivation: if the caller has to decide what it wants to do by setting the parameter, then you might as well provide different methods and avoid the conditional; you not only avoid the conditional behavior but also gain compile time checking; furthermore your interface also is clearer; you shouldn't use Replace Parameter with Explicit Methods when the parameters values are likely to change a lot
+
+*** Preserve Whole Object
+Type: making method calls simpler
+Problem: you are getting several values from an object and passing these values as parameters in a method call
+Solution: send the whole object instead
+Motivation: the called object can ask for whathever it wants from the whole object; when you pass in values, the called object has a dependency on the values, but there isn't any dependency to the object from which the values were extracted; that a called method uses lots of values from another object is a signal that the called method should really be defined on the object from which the values come
+
+*** Replace Parameter with Method
+Type: making method calls simpler
+Problem: an object invokes a method, then passes the result as a parameter for a method; the receiver can also invoke this method
+Solution: remove the parameter and let the receiver invoke the method
+Motivation: long parameters lists are difficult to understand and we should reduce them as much as possible; you can't remove the parameter if the calculation relies on a parameter of the calling method, because that parameter may change with each call
+
+*** Introduce Parameter Object
+Type: making method calls simpler
+Problem: you have a group of parameters that naturally go together
+Solution: replace them with an object
+Motivation: it reduces the size of the parameter lists, and long parameter lists are hard to understand; because once you have clumped together the parameters, you soon see behavior that you can also move into the new class; by moving this behavior into the new object, you can remove a lot of duplicated code
+
+*** Remove Setting Method
+Type: making method calls simpler
+Problem: a field should be set at creation time and never altered
+Solution: remove any setting method for that field
+Motivation: providing a setting method indicates that a field may be changed; this situation often occurs when programmers blindly use indirect variable access; that way your intention is clear and you often remove the very possibility that the field will change
+
+*** Hide Method
+Type: making method calls simpler
+Problem: a method is not used by any other class
+Solution: make the method private
+Motivation: it is somewhat more difficult to tell when a method is too visible; if you make a getting and setting method private and you are using direct variable access, you can remove the method
+
+*** Replace Constructor with Factory Method
+Type: making method calls simpler
+Problem: you want to do more than simple construction when you create an object
+Solution: replace the constructor with a factory method
+Motivation: you can use factory methods for situations in which constructors are too limited; they can be used to signal different creation behavior that goes beyond the number and types of parameters; factory methods are essential for Change Value to Reference
+
+*** Encapsulate Downcast
+Type: making method calls simpler
+Problem: a method returns an object that needs to be downcasted by its callers
+Solution: move the downcast to within the method
+Motivation: downcasting is annoying with strongly typed object-oriented languages because it feels unnecessary; downcasting may be a necessary evil but you should do it as little as possible
+
+*** Replace Error Code with Exception
+Type: making method calls simpler
+Problem: a method returns a special code to indicate an error
+Solution: throw an exception instead
+Motivation: when things go wrong, you neeed to do something about it; the problem is that the part of a program that spots an error isn't always the part than can figure out what to do about it; when such a routine finds an error, it needs to let its caller know, and the caller may pass the error up the chain; exceptions are better than Unix and C-based systems return codes because they clearly separate normal processing from error processing
+
+*** Replace Exception with Test
+Type: making method calls simpler
+Problem: you are throwing a checked exception on a condition the caller could have checked first
+Solution: change the caller to make the test first
+Motivation: exceptions allow us to avoid complex codes by use of Replace Error Code with Exception, thus they also can be used to excess; exceptions should be used for exceptional behavior, behavior that is an unexpected error; they should not act as a substitute for conditional tests; if you can reasonably expect the caller to check the condition before calling the operation, you should provide a test, and the caller should use it
+
+*** Pull Up Field
+Type: dealing with generalization
+Problem: two subclasses have the same field
+Solution: move the field to the superclass
+Motivation: certain fields can be duplicates; such fields sometimes have similar names but not always; if they are being used in a similar way, you can generalize them
+
+*** Pull Up Method
+Type: dealing with generalization
+Problem: you have methods with identical results on subclasses
+Solution: move them to the superclass
+Motivation: although two duplicate methods works fine as they are, they are nothing more than a breeding ground for bugs in the future; whenever there is duplication, you face the risk that an alteration to one will not be made to the other; usually it is difficult to find the duplicates; if you have two methods that are similar but not the same, you may be able to use From Template Method
+
+*** Pull Up Constructor Body
+Type: dealing with generalization
+Problem: you have constructors on subclasses with mostly identical bodies
+Solution: create a superclass constructor, call this from the subclass methods
+Motivation: constructors are tricky things; with a constructor the common behavior is often the construction; you can't use Pull Up Method here, because you can't inherit constructors; if refactoring becomes complex, you might want to consider using Replace Constructor with Factory Method
+
+*** Push Down Method
+Type: dealing with generalization
+Problem: behavior on a superclass is relevant only for some of its subclasses
+Solution: move it to those subclasses
+Motivation: use it when you need to move behavior from a superclass to a specific subclass, usually because it makes sense only there
+
+*** Push Down Field
+Type: dealing with generalization
+Problem: a field is used only by some subclasses
+Solution: move the field to those subclasses
+Motivation: use it when you don't need a field in the superclass but only in a subclass
+
+*** Extract Subclass
+Type: dealing with generalization
+Problem: a class has features that are used only in some instances
+Solution: create a subclass for that subset of features
+Motivation: the main alternative to Extract Subclass is Extract Class; this is a choice between delegation and inheritance; Extract Subclass is easier to do but you can't change the class-based behavior of an object once the object is created
+
+*** Extract Superclass
+Type: dealing with generalization
+Problem: you have two classes with similar features
+Solution: create a superclass and move the common features to the superclass
+Motivation: one form of duplicate code is two classes that do similar things in the same way or similar things in different ways; objects provide a built-in mechanism to simplify this situation with inheritance; an alternative is Extract Class; the choice is essentially between inheritance and delegation; inheritance is the simpler choice if two classes share interfaces as well as behavior
+
+*** Extract Interface
+Type: dealing with generalization
+Problem: several clients use the same subset of a class's interface, or two classes have part of their interfaces in common
+Solution: extract the subset into an interface
+Motivation: Extract Interface can only bring out common interfaces not common code; using Extract Interface can lead to smelly duplicate code; interfaces are good to use whenever a class has distinct roles in different situations
+
+*** Collapse Hierarchy
+Type: dealing with generalization
+Problem: a superclass and subclass are not very different
+Solution: merge them together
+Motivation: a class hierarchy can easily become too tangled for its own good; after refactoring you may find that you have a subclass that isn't adding any value, so you need to merge the classes together
+
+*** From Template Method
+Type: dealing with generalization
+Problem: you have two methods in subclasses that perform similar steps in the same order, yet the steps are different
+Solution: get the steps into methods with the same signature, so that the original methods become the same; then you can pull them up
+Motivation: inheritance is a powerful tool for eliminating duplicate behavior; in this case we can move the sequence to the superclass and allow polymorphism to play its role in ensuring the different steps do their things differently; this king of method is called a Template Method
+
+*** Replace Inheritance with Delegation
+Type: dealing with generalization
+Problem: a subclass uses only part of a superclass interface or does not want to inherit data
+Solution: create a field for the superclass, adjust methods to delegate to the superclass, and remove the subclassing
+Motivation: inheritance sometimes it isn't what you want; code that says one thing when your intention is something else provides a confusion you should remove; by using delegation instead, you make it clear that you are making only partial use of the delegated class
+
+*** Replace Delegation with Inheritance
+Type: dealing with generalization
+Problem: you're using delegation and are often writing many simple delegations for the entire interface
+Solution: make the delegating class a subclass of the delegate
+Motivation: if you aren't using all the methods of the class to which you are delegating, you shouldn't use Replace Delegation with Inheritance, because a subclass should always follow the interface of the superclass; if the delegating methods are tiresome, you have other options - consider using Remove Middle Man, Extract Superclass or Extract Interface; data sharing is a responsibility that cannot be transferred back to inheritance, so you need to beware of situation in which the delegate is shared by more than one object and is mutable
+
+*** Tease Apart Inheritance
+Type: big refactoring
+Problem: you have an inheritance hierarchy that is doing two jobs at once
+Solution: create two hierarchies and use delegation to invoke one from the other
+Motivation: it is easy to misuse inheritance; tangled inheritance is a problem because it leads to code duplication; it makes changes more difficult, because the strategies for solving a certain kind of problem are spread around; the resulting code is hard to understand; if every class at a certain level in the hierarchy has subclasses that begin with the same adjective, you probably are doing two jobs with one hierarchy
+
+*** Convert Procedural Design to Objects
+Type: big refactoring
+Problem: you have code written in a procedural style
+Solution: turn the data records into objects, break up the behavior, and move the behavior to the objects
+Motivation: using objects well takes time to learn; the typical situation is long procedural methods on a class with little data and dumb data objects with nothing more accessors; we often use small strategy objects when we need to vary behavior, however, such procedural objects usually are small and are used when we have a particular need for flexibility
+
+*** Separate Domain from Presentation
+Type: big refactoring
+Problem: you have GUI classes that contain domain logic
+Solution: separate the domain logic into separate domain classes
+Motivation: model-view-controller pattern (MVC) is the separation between the user interface code and the domain logic; this separates two complicated parts of the program into pieces that are easier to modify; two-tier style of design making it hard for you to put the logic anywhere else
+
+*** Extract Hierarchy
+Type: big refactoring
+Problem: you have a class that is doing too much work, at least in part through many conditional statements
+Solution: create a hierarchy of classes in which each subclass represents a special case
+Motivation: if class is being too big, cut down small trees; if the conditional logic do not remains static during the life of the object then use Extract Class in the first place
+
+### Putting It All Together
+Get used to picking a goal
+Stop when you are unsure
+Backtrack
+Duets
+
