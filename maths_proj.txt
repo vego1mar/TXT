@@ -1,0 +1,191 @@
+=======================================
+TREE vs Graham's number
+g(1) = 3||||3 = 3^3^3^3^3
+
+fast-growing hierarchies
+f0(n) = n+1
+f1(n) = f0..fn(n) = f0^n(n) = 2n
+f2(n) = f1^n(n) = (2^n)*n
+f3(n) > 211n
+
+f2(4) = (2^4)*4 = 16*4 = 64 
+    ==(f1:=2n)== f1^4(2) * f1(4) =
+    ==(f0:=n+1)== [f0(1) + f0^2(1)]^(+3) * [f0*(3) + f0^4(1)] =
+    = [2 + (1*2)]^(+2) * [4 + (1*4)] =
+    = [4]^(+2) * [8] =
+    = (4*2) * 8 =
+    = 8 * 8 =
+    = 64
+
+Feferman-Schutte ordinal - gamma0
+TREE is the fastest function; there is no hierarchy faster than TREE
+
+=======================================
+TREE(3) - we have 3 nodes/seeds and we want to build a forest one try by a time
+rule 1: n-th tree cannot have more than n seeds, i.e. 1st - max=1; 2nd - max=2; 3rd - max=3
+rule 2: if earlier tree is found to be contained in the next tree, then the whole forest dies (inf-embeddable: tree contained in other tree must preserves the nearest common ancestors)
+
+TREE(n) = length of the forest
+TREE(1) = 1
+TREE(2) = 3
+TREE(3) -> it's finite, yet we only know the lower bound with Ackerman's numbers
+
+Kruskal's tree theorem: let's imagine the set of all possible combination of seeds you use (let's imagine some sort of ordering for seeds of TREE - well-quasi ordering); the corresponding tree you build out of those also has some sort of ordering; the idea is that you will eventually find a tree that is contained is the other tree; this theorem cannot be proved with using of finite arithmetic, yet we can prove the specific TREE(n)
+
+To prove that TREE(3) is finite, based on on Kruskal's tree theorem and using finite arithmetic, we need about 2||1000 (2^..^2 for 1000 times) symbols.
+
+Even faster: TREE(TREE(n))
+
+=======================================
+Maximum entropy of information you can store in your head:
+Smax = A/(4L)
+L = 1.616 * 10^-35 m
+A = 4(pi)(r^2)
+
+Arrow notation (a repetition of b times):
+3|3 = 3*3*3 = 27
+3||3 = 3|(3|3) = 3|27 = 3^27
+
+Graham's number is about higher dimensional cubes.
+Famous analogy: we've got a group of people; then trying to select committees as subsets; you can place some people in one commitee, other people in few committees; then I will pick pairs of committees, so each committee can be more than one pair and so on; each pair have a color - blue or red; question: how many people do I need to guarantee that are at least four committees for which each pair, made out of this committees, has the same color and for which each member of committee is an even number of committees?
+The smallest number is 6.
+The Graham's number is the maximum number for the above question to be true.
+
+g(1) = 3||||3 = 3|(3|||3) = 3|(3|(3||3)) = 3|(3|(3|(3|3))) = 3^(3^(3^(3^3))) = 3^3^3^27
+g(2) = 3 |g(1) 3 == 3 {g(1) number of arrows} 3
+g(3) = 3 |g(2) 3
+g(64) = Graham's number
+The end of Graham's number g(64) = ...627262464195387
+
+=======================================
+Darts in higher dimensions:
+We start from the full 'bullseye'. We use the dart.
+From the center of the circle we draw a chord perpendicular to the radius between it and the center.
+Length of this chord is a new diameter of the circle, using the original center as the center.
+
+The puzzle:
+We have a player that throws darts with a random distribution.
+Question: what is the expected score? What is his average score for a thousand games?
+E[S] = P(S=1)*1 + P(S=2)*2 + ...
+The probability of hitting the bullseye (the center) is zero.
+
+Area of the circle = (pi)(R^2) = pi
+Area of the square = 2*r = 2*2 = 4
+P(S>1) = pi/4 -> probability that your first throw will land in space S>1
+P(x0^2 + y0^2 + x1^2 + y1^2) -> second throw probability (we can go with it into 4D to think of P(x0,x1,y0,y1))
+P(S>2) = (pi)^2/((2^2)*2)
+P(S>3) = (pi)^3/((2^6)*6)
+
+P(S=2) = P(S>1) - P(S>2)
+E[S] = e^(pi/4) ~ 2.1932...
+
+=======================================
+Archimedes number
+Archimedes cattle problem
+
+white_bulls = ((1/2)+(1/3))*black_bulls + yellow_bulls
+black_bulls = ((1/4)+(1/5))*dappled_bulls + yellow_bulls
+dappled_bulls = ((1/6)+(1/7))*white_bulls + yellow_bulls
+white_cows = ((1/3)+(1/4))*black_herd
+black_cows = ((1/4)+(1/5))*dappled_herd
+dappled_cows = ((1/5)+(1/6))*yellow_herd
+yellow_cows = ((1/6)+(1/7))*white_herd
+white_bulls + black_bulls = a_square_number
+dappled_bulls + yellow_bulls = a_triangular_number
+
+triangular numbers: 1, 3, 6, 10, 15, 21, 28, 36, ...
+
+Question: How many cattle in total on the island? (lowest possible solution)
+Without the last two equations solution is 50_389_082.
+Without the last one equation solution is 51_285_802_909_803.
+
+The valid solution (Archimides number) is 766{206_542_digits}.
+The exact number has been computed due to H. C. Williams, R. A. German, C. R. Zarnke ('Solution of the Cattle Problem of Archimedes')
+
+=======================================
+Planar graphs and perfect graphs
+graph embedding
+Fary's theorem: any simple planar graph can be drawn without crossing so that its edges are straight lines.
+Kuratowski's theorem: G is planar if G has no K5-sub and no K3,3-sub.
+Every planar graph is 4-colourable.
+Theorem: Let G be a planar graph, V - number of vertices, E - number of edges; then E <= 3V - 6.
+Theorem: G is not planar and G has no triangle, then E <= 2V - 4.
+
+chi(g) - the smallest number of colors to color a graph
+clique: set of pairwise adjacent vertices
+Theorem 0.1: chi(g) >= omega(g) => chromatic number >= largest clique
+Not true: small omega --> small chi => largest clique --> small chromatic number
+When chi == omega, such that it preserves however vertices will be deleted from the graph (hereditary)?
+Claude Berge, 1961: G is perfect if Chi(H) == Omega(H) for every H obtained from G by deleting vertices.
+The Strong Perfect Graph Theorem (M. Chudnovsky, N. Robertson, P. Seymour, R. Thomas; 2002): The only graphs that are no perfect are one of 3 cases (C[2k+1], C[2k+1]+triangle, C[2k+1] with Omega).
+
+=======================================
+Josephus problem:
+A group of 41 Jewish soldiers surrounded by a Roman army. They do not want to be captured, so they said in a circle and the first man will kill a guy on his left. Next remaining living person continue with this till the last person that should commit a suicide. Josephus preferred capture than a suicide but don't want to tell this other soldiers. Where should he sit within a circle to be the last man living?
+
+Conjecture: if n=2^a then W(n) = 1
+Fast solution: write n in binary system, put the leading digit at the end, read the number
+
+=======================================
+Primes without a digit 7:
+There are an infinite number of them.
+
+=======================================
+Mertens conjecture
+We take a random number. Is it more likely to have an odd number of prime factors or an even number of prime factors?
+Mertens function: {1,-1,0} := {even, odd, has repetead primes}
+Mertens conjecture: Mertens function value for random number will never be larger than its square root -> false (the number must be greater than 10^10^40)
+
+=======================================
+Ancient Egyptian method for multiplication
+multiplicand * multiplier = result
+lhs := (1,2,4,8,16,32,64,...) up to number lower than multiplicand
+rhs := (multiplier, multiplier*2, multiplier*2*2, ...) up to (.)
+multiplicand := lhs[a] + ... + lhs[b]
+result := rhs[a] + ... + rhs[b]
+binary_lhs := (1 if row selected, 0 otherwise)(.)...
+
+=======================================
+Ptolemy's theorem
+AB x CD + AD x BC == AC x BD
+circles of inversion
+
+=======================================
+Dodecahedron
+Yellow Brick Road
+
+=======================================
+Mesolabe compass: division and multiplication through lines
+Square rooting of any number: circles + 1
+
+=======================================
+Unexpected Pi-like numbers
+let x = aaaa..., where a=5, take the reciprocal y=1/x and sin(y)
+* radians (2*pi*r==360_deg)
+* small angles (sin x >> x only for radians)
+* fractions (recurring: 555555^-1 == 0.(00000018)...)
+notation will line refers to the fraction line of numerator/dominator
+
+=======================================
+Egyptian fraction expansion
+
+=======================================
+Beautiful trigonometry
+sine - movement on a circle and chord through time
+trigonometry is a about circles, not triangles (the latter are just for measurements)
+tangent - tracking a movement on a circle and a tangent (to the circle) through time
+secant - it's where the tangent cuts the vertical axis, 1/sin(x)
+ilusion of movement using chords
+
+=======================================
+Hat problems
+Hamming single-error correcting codes
+Lionel Levine, introduces a new scheme, infinite stack of hats
+* can see each other's hats
+* can't see their own hats
+* predict by naming a number
+* win if the players numbers pointing out a blue hat
+
+=======================================
+
+

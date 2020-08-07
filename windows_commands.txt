@@ -1,0 +1,18 @@
+slmgr.vbs /xpr
+w32tm /resync
+shell:ControlPanelFolder
+chcp 65001
+dir /s /b /o:n /a:d > list.txt
+cmd /min /C "set __COMPAT_LAYER=RUNASINVOKER && start "" %1"
+
+netsh wlan show drivers
+netsh wlan set hostednetwork mode=allow ssid=YourSSID key=YourPassphraseWith8CharactersAtLeast
+netsh wlan start hostednetwork
+Network connections > Properties > Sharing > Allow && Home networking: MS Hosted Virtual Adapter
+netsh wlan stop hostednetwork
+netsh wlan set hostednetwork mode=disallow
+netsh wlan show hostednetwork
+netsh wlan show hostednetwork setting=security
+HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\WlanSvc\Parameters\HostedNetworkSettings
+
+attrib +p file.txt

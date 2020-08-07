@@ -1,0 +1,8 @@
+In case of MP4 format (all, except 1440p 60fps & 2160p 60fps):
+ffmpeg -i videoplayback.mp4 -i videoplayback.m4a -c:v copy -c:a copy output.mp4
+
+In case of WebM format (1440p 60fps and 2160p 60fps):
+ffmpeg -i videoplayback.webm -i videoplayback.m4a -c:v copy -c:a copy output.mkv
+
+ffmpeg -i videoplayback.m4a -ab 128000 -vn music.mp3
+ffmpeg -i video.webm -i audio.m4a -c:v libx264 -c:a copy out.mp4
