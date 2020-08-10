@@ -1,0 +1,259 @@
+Programming Paradigms for Dummies: What Every Programmer Should Know
+Peter van Roy
+=======
+
+'More is not better or worse than less, just different.' - The paradigm paradox
+Based on: [50] Van Roy P. and Seif H., Concepts, Techniques, and Models of Computer Programming, MIT Press, Cambridge, MA, 2004. See ctm.info.ucl.ac.be.
+
+Paper in short: paradigms, concepts, relationships.
+Concepts: records, closures, independence (concurrency), named state.
+Sweet spots: dual-paradigm language, definitive language.
+
+Important questions:
+How programming paradigms influence language design?
+How principles of data abstraction let us orginize large programs?
+How to design languages to support several paradigms? (sweet spots)
+How to define new forms of data with their operations in a program?
+How paradigms are related?
+What the basic concepts of paradigms are designed and combined?
+What is a reasonable architecture for designing self-sufficient systems?
+
+CONTENT:
+(1) introduction
+(2) languages, paradigms and concepts
+    taxonomy; each paradigm has its place; observable non-determinism
+(3) designing a language and its programs
+    dual-paradigm & definitive languages
+(4) programming concepts
+    expressiveness: records, lexically scoped closures, independence, named state
+(5) data abstraction
+    objects, abstract data types, declarative objects, stateful abstract data type
+(6) deterministic concurrent programming
+    easier than usual: shared-state/message-passing; it cannot express nondeterminism
+(7) constraint programming
+    declarative: telling what is (needed), not how to; computer-aided composition
+
+PROPOSED ILLUSTRATIVE PICTURES:
+Figure 1. Languages, paradigms, and concepts;
+Figure 2. Taxonomy of programming paradigms;
+http://www.catb.org/~esr/writings/taoup/html/graphics/taxonomy.png; Taxonomy of languages
+Figure 3. Different levels of support for state
+Figure 4. Computer programming and system design (adapted from Weinberg [56])
+Figure 5. How adding exceptions to a language can simplify programs
+Figure 6. A single feedback loop
+Figure 8. The human respiratory system as a feedback loop structure
+Figure 9. Definition and call of a closure
+Figure 12. A program as state transformer
+Figure 14. The four ways to organize a data abstraction
+Figure 16. Inheritance versus composition
+https://3.bp.blogspot.com/-4KAOtX0S5NU/UvJN_w4TCZI/AAAAAAAABCo/SKPKYaci8s0/s1600/association+vs+composition+vs+aggregation.jpg
+Table 2. Four deterministic concurrent paradigms and one that is not
+Figure 17. Constraint solver based on the propagate-distribute algorithm
+
+
+-----------
+INTRODUCTION:
+'important ideas of programming are simple'
+'We have deliberately left out detailed explanations of some (...) paradigms'
+
+'Solving a programming problem requires choosing the right concepts. All but the smallest toy problems require different sets of concepts for different parts. This is why programming languages should support many paradigms.'
+
+'A programming paradigm is an approach to programming a computer based on a mathematical theory or a coherent set of principles. Each paradigm supports a set of concepts that makes it the best for a certain kind of problem.',
+like:
+object-oriented -- large number of related hierarchical data abstractions -- Java
+logic -- transforming or navigating complex symbolic structures -- Prolog
+discrete synchronous -- reactions to sequence of external events -- Esterel
+
+'understanding the right concepts can help improve programming style even in languages that do not directly support them'
+'it is certainly not true that there is one "best" paradigm'
+
+
+-----------
+LANGUAGES, PARADIGMS AND CONCEPTS:
+'There are many fewer programming paradigms than programming languages.'
+'Each paradigm is defined by a set of programming concepts, organized into a simple core language called the paradigm's kernel language.'
+
+'With n concepts, it is theoretically possible to construct 2^n paradigms.'
+'A paradigm almost always has to be Turing complete to be practical. This explains why functional programming is so important: it is based on the concept of first-class function, or closure, which makes it equivalent to the lambda-calculus which is Turing complete.'
+
+Turing-complete machine: makes decision based on memory; can run forever; memory is infinite; has random access memory; can simulate any other Turing machine; can answer to any computational question
+Turing-complete language - 'a full-fledged interpreter (it has conditionals and recursion but not loops;' - The Art of Unix Programming by Eric S. Raymond
+Possibly: https://softwareengineering.stackexchange.com/questions/132385/what-makes-a-language-turing-complete
+
+
+'The first key property of a paradigm is whether or not it can express observable nondeterminism. (...) [it is] when the execution of a program is not completely determined by its specification, i.e., at some point during the execution the specification allows the program to choose what to do next [by an OS scheduler].'
+'The nondeterminism is observable if a user can see different results from executions that start at the same internal configuration.'
+
+'The second key property of a paradigm is how strongly it supports state. State is the ability to remember information, or more precisely, to store a sequence of values in time.'
+unnamed state - sequence or condition; a vector of numbers rather than a named number
+'Nondeterminism is important for real-world interaction (e.g., client/server [communication]). Named state is important for modularity (...).'
+
+'The point is to pick a paradigm with just the right concepts. Too few and programs become complicated. Too many and reasoning becomes complicated.'
+
+complexity: the number of basic interacting components
+randomness: how nondeterministic the system's behavior is
+'There are two kind of systems that are understood by science: aggregates ((...) statistical mechanics) and machines (e.g., clocks (...) Computer programming permits the construction of the most complex systems.'
+
+'Concepts are not combined arbitrarily to form paradigms. They can be organized according to the creative extension principle.'
+Examples of creative extension principle:
+[example for sequential functional programming paradigm]
+-- (we need to model...) -- (which turns us into...) -- (creative complexity leverage)
+-- several independent activities -- several execution stacks, scheduler, mechanism for preempting execution from one activity to another -- concurrency
+-- updatable memory -- adding arguments to all function calls relative to that entity for input and output values (not modular!) -- named state
+-- error detection and correction, in which any function can detect an error at any time and transfer control to an error correction routine -- error codes to all function outputs and conditionals -- exceptions
+
+'The common theme in these three scenarios (...) is that we need to do pervasive (nonlocal) modifications of the program in order to handle a new concept.'
+
+
+-----------
+DESIGNING A LANGUAGE AND ITS PROGRAMS:
+definitive language: language built around higher level topics such as dataflow analysis, type systems, language concepts (Erlang, E, Oz)
+'Language embedding (e.g. SQL): SQL already supports two paradigms: a relational programming engine for logical queries of a database and a transactional interface for concurrent updates of the database.'
+'deterministic concurrency is an excellent way to exploit the parallelism of multi-core processors because it is as easy as functional programming and it cannot have race conditions'
+
+Consequences for language design (from definitive languages):
+(1) 'the notion of declarative programming is at the very core of programming languages'
+(2) 'declarative programming will stay at the core for the foreseeable future, because distributed, secure, and fault-tolerant programming are essential topics that need support from the programming language'
+(3) 'deterministic concurrency is an important form of concurrent programming that should not be ignored'
+(4) 'message-passing concurrency is the correct default for general-purpose concurrent programming instead of shared-state concurrency'
+
+'The ultimate software system is one that does not require any human assistance, i.e., it can provide for every software modification that it needs, including maintenance, error correction and detection, and adaptation to changing requirements. Such a system can be called self sufficient. Self-sufficient systems can be very robust'
+
+Feedback loops can interact in two fundamental ways:
+> stigmergy: two loops share one subsystem
+> management: one loop controls another loop directly
+
+
+-----------
+PROGRAMMING CONCEPTS:
+'The record is the foundation of symbolic programming. A symbolic programming language is able to calculate with records: create new records, decompose them, and examine them. Many important data structures such as arrays, lists, strings, trees, and hash tables can be derived from records.'
+
+'From an implementation viewpoint, a closure combines a procedure with its external references (the references it uses as its definition). (...) We say that the environment (set of references) of P is close over its definition context.'
+With closures we can creating a control structure to separate creation and execution.
+
+Many abilities are based on closures:
+(x) instantiation and genericity can be done easily by writing functions (class) that return other functions (object); object-oriented programming
+(x) separation of concerns can be done easily by writing functions that take other functions as arguments (instead of error prone transformation called "weaving"); aspect-oriented programming
+(x) component-base programming (a component is a block that specifies part of a program; a module is component's instance); component is the function, module is a record containing closures
+
+independent parts: there is no order in time between them (non-sequential)
+'When two parts do not interact at all, we say they are concurrent.'
+'Concurrent parts can be extended to have some well-defined interaction [communication]'
+'Concurrency is a language concept and parallelism is a hardware concept.'
+'Two parts are parallel if they execute simultaneously on multiple processors.'
+'Concurrency and parallelism are orthogonal'
+
+Three levels of concurrency: 
+> distributed system (computer, independent)
+> operating system (process, competitive)
+> activities inside one process (thread, cooperative)
+
+Two popular paradigms for concurrency:
+> shared-state (data access by monitors, atomic update by transactions)
+> message-passing (threaded agents, synchronous send/asynchronous receive)
+
+'State introduces an abstract notion of time in programs. In functional notion, there is no notion of time. Functions are mathematical functions: when called with the same arguments, they always give the same results. Functions do not change. In the real world, things are different. (...) we add an abstract notion of time to the program. This abstract time is simply a sequence of values in time that has a single name. We call this sequence a named state. Unnamed state is also possible (...) but it does not have the modularity properties of named state.'
+'Having named state is both a blessing and a curse. It is a blessing because it allows the component with named state to adapt to its environment. (...) It is a curse because a component with a named state can develop erratic behavior if the content of the named state is unknown or incorrect. (...) Correctness is not so simple to maintain for a component with a named state.'
+
+'Named state is important for a system's modularity. We say that a system (function, procedure, component, etc.) is modular if updates can be done to part of the system without changing the rest of the system. (...) Without the named state , this is not possible.'
+'We give an internal memory to the module M. In Oz, this internal memory is called a cell or a variable cell. This corresponds simply to what many languages call a variable.'
+
+'The main advantage of named state is that the program becomes modular. The main disadvantage is that a program can become incorrect. It seems that we need to have and not have named state at the same time. How do we solve this dilemma? [It is called a technical contradiction] One solution is to concentrate the use of named state in one part of the program and to avoid named state in the rest.'
+
+
+-----------
+DATA ABSTRACTION:
+'A data abstraction is a way to organize the use of data structures according to precise rules which guarantee that the data structures are used correctly. A data abstraction has an inside, an outside, and an interface between the two. All data structures are kept on the inside. The inside is hidden from the outside. All operations on the data must pass through the interface.'
+
+Advantages of 3-layered data abstraction (DA) model:
+(1) there is a quarantee that the data abstraction will always work correctly
+(2) the program is easier to understand (plus, compositionality is allowed - DA in DA)
+(3) it becomes possible to develop very large programs
+
+'There are four main ways to organize data abstraction, organized along two axes. The first axis is state: does the abstraction use named state or not. The second axis is bundling: does the abstraction fuse data and operations into a single entity ((...) procedural data abstraction (...), or does the abstraction keep them separate ((...) abstract data type).'
+
+'The most important principle of object-oriented programming, after data abstraction itself, is polymorphism. In everyday language, we say an entity is polymorphic if it can take on different forms. In computer programming, we say an entity is polymorphic if it can take arguments of different types. This ability is very important for organizing large programs so that the responsibilities of the program's design are concentrated in well-defined places instead of being spread out over the whole program.'
+'(...) if a program works with one data abstraction as argument, it can work with another, if the other has the same interface. All four kinds of data abstraction (...) support polymorphism. [stateful ADT, pure ADT, declarative object, pure object]'
+
+'The second important principle of object-oriented programming is inheritance. (...) It can be a good idea to define abstractions to emphasize their common relationship and without repeating the code they share. (...) Inheritance allows to define abstractions incrementally. (...) The incremental definition A is called a class. However, the abstraction that results is a full definition, not a partial one.'
+'Instead of inheritance, we recommend to use composition instead. Composition is a natural technique: it means simply that an attribute of an object refers to another object. The objects are composed together.'
+'If you must use inheritance, then the right way to use it is to follow the subsitution principle. (...) [which] states that any procedure that works with objects O(B) of class B must also work with objects O(A) of class A. In other words, inheritance should not break anything. Class A should be a conserative extension of class B.'
+
+
+-----------
+DETERMINISTIC CONCURRENT PROGRAMMING:
+'One of the major problems of concurrent programming is nondeterminism. An execution of a program is nondeterministic if at some point during the execution there is a choice of what to do next. Nondeterminism appears naturally when there is concurrency: since two concurrent activities are independent, the program's specification cannot say which executes first. (...) typically there is a part of the system called the scheduler that makes the choice.'
+
+'Nondeterminism is very hard to handle if it can be observed by the user of the program. Observable nondeterminism is sometimes called a race condition. (...) Debugging and reasoning about programs with race conditions is very difficult.'
+race condition - correct behavior of the system relies on two independent events (in order) without ensuring that [TAoUP, E.S.R.]
+
+'The easiest way to eliminate race conditions is to design a language that does not have nondeterminism. (...) How can we avoid the ill effects of non-determinism and still have concurrency? [another technical contradiction] We can solve this problem by making a clear distinction between nondeterminism inside the system, which cannot be avoided, and observable nondeterminism, which may be avoided.'
+
+Solving race conditions:
+(1) we limit observable nondeterminism to those parts of the program that really need it
+(2) we define the language for concurrency without observable nondeterminism
+
+Concurrent paradigms:
+-- declarative concurrency
+-- constraint programming
+-- functional reactive programming (with nondeterministic inputs)
+-- discrete synchronous programming (with nondeterministic inputs)
+
+Declarative concurrency (monotonic dataflow): deterministic inputs are received and used to calculate deterministic outputs.
+Nonmonotonic dataflow paradigm: changes on any input are immediately propagated through the program. The changes can be conceptualized as dataflow tokens traveling through the program. It has the disadvantage that it sometimes adds its own nondeterminism that does not exist in the input (a 'glitch').
+Functional reactive programming (continuous synchronous programming): programs are functional but the function arguments can be changed and the change is propagated to the output. The arguments are continuous functions of a totally ordered variable (for introducing time or size). Glitches can occur and must be avoid, for example by compile-time preprocessing or thread scheduling constraints.
+Discrete synchronous programming: a program waits for input events, does internal calculations, and emits output events. This is called a reactive system. Reactive systems must be deterministic (...) [where] time is discrete instead of continuous: time advances in steps from one input event to the next. Technically a synchronous language defines a deterministic Mealy machine, which is a finite state automaton combining input with output.
+
+'Deterministic concurrency is omnipresent in computer music. [OpenMusic, Antescofo, Faust, Max/MSP, Hermes/dl]'
+
+
+'Declarative concurrency has the main advantage of functional programming, namely confluence, in a concurrent model. This means that all evaluation orders give the same results, or in other words, it has no race conditions. It adds two concepts to the functional paradigm: threads and dataflow variables. (...) A thread defines a sequence of instructions, executed independently of other threads. [operations: create, run] (...) A dataflow variable is a single-assignment variable that is used for synchronization. [operations: create, bind, wait] (...) The result is a declarative dataflow language.'
+'We can add lazy execution [lazy suspension] to declarative concurrency and still keep the good properties of confluence and determinism. (...) We make declarative concurrency lazy by adding one concept, by-need synchronization (...) It is the most general declarative paradigm based on functional programming known so far.'
+
+'With the advent of multi-core processors, parallel programming has finally reached the mainstream. (...) Decades of reasearch show that parallel programming cannot be completely hidden from the programmer: it is not possible in general to automatically transform an arbitrary program into a parallel program. (...) Declarative programming is a good paradigm for parallel programming. This is because it combines concurrency with the good properties of functional programming. (...) A common programming style is to have concurrent agents connected by streams. This kind of program can be parallelized simply by partitioning the agents over the cores, which gives a pipelined execution.'
+
+
+-----------
+CONSTRAINT PROGRAMMING:
+'In constraint programming, we express the problem to be solved as a constraint satisfaction problem (CSP). A CSP can be stated as follows: given a set of variables ranging over well-defined domains and a set of constraints (logical relations) on those variables, find an assignment of values to the variables that satisfies all the constraints.'
+'Constraint programming is the most declarative of all practical programming paradigms. The programmer specifies the result and the system searches for it. This use of search harnesses blind chance to find a solution.'
+
+'Constraint programming is at a much higher level of abstraction than all the other paradigms (...) First, constraint programming can impose a global condition on a problem: a condition that is true for a solution. Second, constraint programming can actually find a solution in reasonable time, because it can use sophisticated algorithms for the implemented constraints and the search algorithms. This gives the solver a lot of power. (...) constraint programming has been used in computer-aided composition.'
+
+'Programming with constraints is very different from programming in the other paradigms (...) Instead of writing a set of instructions to be executed, the programmer models the problem: represent the problem using variables with their domains, define the problem as constraints on the variables, choose the propagators that implement the constraints, and define the distribution and search strategies. (...) The art of constraint programming consists in designing a model that makes big problems tractable.'
+
+'The power and flexibility of a constraint programming system depend on the expressiveness of its variable domains, the expressiveness and pruning power of its propagatores [concurrent agents], and the smartness of its CSP solver.'
+
+'Constraint programming has applications in many areas, such as combinatorics, planning, scheduling, optimization, and goal-oriented programming. (...) Finite domains are simple example of a discrete domain. Constraint systems have also been built using continuous domains. For example, the Numerica system uses real intervals and can solve problems with differential equations. The difference between Numerica's techniques and the usual numerical solutions of differential equations (...) is that the constraint solver gives a guarantee: the solution, if it exists is guaranteed to be in the interval calculated by the solver.'
+
+'Recent research since 2006 has introduced a very powerful discrete domain, namely directed graphs. (...) what makes the domain truly interesting is that it can also include complex conditions such as transitive closure, the existence of paths and dominators, and subgraph isomorphisms.'
+
+
+'In principle, solving a CSP is easy: just enumerate all possible values for all variables and test whether each enumeration is a solution. This naive approach is wildly impractical. Practical constraint solvers use much smarter techniques such as local search (...) or the propagate-distribute algorithm (...)'
+
+Propagate-distribute algorithm solver working idea:
+-- propagate step (use propagator to obtain a fixpoint, a solution by reducing domains)
+-- distribute step (for incomplete solutions split constraint into two subproblems)
+
+Propagate-distribute algorithm creates a binary tree called the search tree.
+
+Efficiency factors of propagate-distribute algorithm:
+-- propagation over the constraint domains (how much pruning is done; search/inferencing)
+-- distribution strategy (how constraint is chosen for step e.g. first-fail)
+-- search strategy (how to traverse the tree i.e. DFS, BFS, A*, iterative deepening)
+
+
+-----------
+RECOMMENDATIONS:
+'Programming languages should support several paradigms because different problems require different concepts to solve them (...) We recommend that you explore the paradigms by actually programming in them.'
+
+Haskell: lazy functional programming
+Erlang: message-passing concurrency
+SQL: transactional programming
+Esterel: discrete synchronous programming
+Oz: declarative concurrency, constraint programming
+Common Lisp: many programming concepts at once
+
+'A true multiparadigm language is factored: it is possible to program in one paradigm without interference from the other paradigms.'
+
+%%
