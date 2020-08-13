@@ -165,4 +165,88 @@ $ echo ${actor,}                   # first letter to lowercase
 $ jULIA ROBERTS
 
 
+#! /bin/bash
+TEMP=$1
+if [ $TEMP -gt 5 ]; then           # if [ condition ]
+  if [ $TEMP -lt 15 ]; then        # then
+      echo "The weather is cold."  #   block of code...
+  elif [ $TEMP -lt 25 ]; then      # fi
+      echo "The weather is nice."
+  else                             # whitespaces surrounding condition
+      echo "The weather is hot."   # are compulsory as well as for
+  fi                               # conditional operator
+else
+  echo "It's freezing outside..."
+fi
+
+
+if [ $(whoami) = 'root' ]; then echo "root"; else echo "not root"; fi
+
+
+                                   # comparison operators
+if [ $int -eq 200 ]                # is equal to
+if [ $int -ne 1 ]                  # is not equal
+if [ $int -gt 15 ]                 # is greater than
+if [ $int -ge 10 ]                 # is greater than or equal to
+if [ $int -lt 5 ]                  # is less than
+if [ $int -le 0 ]                  # is less than or equal to
+if (( $int1 == $int2 ))            # is equal to
+if (( $int1 != $int2 ))            # is not equal to
+if (( $int1 < $int2 ))             # is less than
+if (( $int1 <= $int2 ))            # is less than or equal to
+if (( $int1 > $int2 ))             # is greater than
+if (( $int1 >= $int2 ))            # is greater than or equal to
+if [ "$str1" = "$str2" ]           # is equal to; for test command
+if [ "$str1" == "$str2" ]          # is equal to
+if [ "$str1" != "$str2" ]          # is not equal to
+if [ "$str1" > "$str2" ]           # is greater than; ASCII ordering
+if [[ "$str1" > "$str2" ]]         # is greater than; lexicographically using locale
+if [ "$str1" >= "$str2" ]          # is greater than or equal to
+if [ "$str1" < "$str2" ]           # is less than
+if [ "$str1" <= "$str2" ]          # is less than or equal to
+if [ -n "$str" ]                   # is not null; non-empty string
+if [ $str ]                        # ditto
+if [ -z "$str" ]                   # is null; zero-length string, empty string
+if [ -e $file ]                    # is file existing
+if [ -d $file ]                    # exists and is a directory
+if [ -f $file ]                    # exists and is a regular file
+if [ -L $file ]                    # exists and is a soft link
+if [ -b $file ]                    # exists and is a block special
+if [ -c $file ]                    # exists and is character special
+if [ -g $file ]                    # exists and is set-group-ID
+if [ -u $file ]                    # exists and its set-user-ID bit is set
+if [ -G $file ]                    # exists and is owned by the effective group ID
+if [ -h $file ]                    # exists and is a symbolic link
+if [ -k $file ]                    # exists and has its sticky bit set
+if [ -O $file ]                    # exists and is owned by the effective user ID
+if [ -p $file ]                    # exists and is a named pipe (FIFO)
+if [ -r $file ]                    # exists and read permission is granted
+if [ -w $file ]                    # exists and write permission is granted
+if [ -x $file ]                    # exists and execute/search permission is granted
+if [ -s $file ]                    # exists and has a size greater than zero
+if [ -S $file ]                    # exists and is a socket
+if [ -t $file_descriptor ]         # exists and is opened on a terminal
+if [ $expr ]                       # expression is true
+if [ ! $expr ]                     # expression is false
+if [ $expr1 -a $expr2 ]            # both expressions are true; AND
+if [ $expr1 -o $expr2 ]            # at least one of the expressions is true; OR
+if [ $file1 -ef $file2 ]           # both files have the same device and i-nodes
+if [ $file1 -nt $file2 ]           # file1 is newer than file2; modification date
+if [ $file1 -ot $file2 ]           # file1 is older than file2
+man test                           # check file types and compare values
+
+
+#!/bin/bash
+case $1 in                         # case $variable in
+[a-z])                             # "regular expression" )
+echo "Small Alphabet." ;;          # command;;
+[A-Z])
+echo "Big Alphabet." ;;
+[0-9])
+echo "Number." ;;
+*)                                 # default case
+echo "Special Character."
+esac
+
+
 
