@@ -1,4 +1,0 @@
-head -79 do_przeczytania | tail +77
-sed -n '77,79p' do_przeczytania
-awk 'NR>=77 && NR<=79' do_przeczytania
-

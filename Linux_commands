@@ -1,0 +1,62 @@
+# Running Linux version
+cat /etc/os-release
+hostnamectl                                   # systemd
+lsb_release -a                                # distribution-specific information
+
+
+# Linux kernel version
+uname -r
+
+
+# Mounting disks
+sudo fdisk -l
+sudo mkdir -p /media/mydisc && mount /dev/sda1 /media/mydisc
+
+
+# Finding files
+find . -name "*.txt"
+
+
+# Finding text in files
+grep -rnw '/path/to/somewhere/' -e 'pattern'
+
+
+# Displaying lines of a file
+head -79 do_przeczytania | tail +77
+sed -n '77,79p' do_przeczytania
+awk 'NR>=77 && NR<=79' do_przeczytania
+
+
+# Changing monitor refresh rate
+xrandr --output DP-0 --mode 2560x1080 --rate 200
+
+
+# 'XAMPP: Another web server is already running'
+sudo /etc/init.d/apache2 stop
+sudo /etc/init.d/mysql stop
+sudo /etc/init.d/proftpd stop
+sudo /opt/lampp/lampp restart
+
+
+# Hardware information
+lscpu                                         # list processing units
+lshw                                          # list hardware units
+hwinfo                                        # hardware info
+lspci                                         # list PCI buses
+lsscsi                                        # list SCSI devices
+lsusb                                         # list USB buses and devices
+inxi -Fx                                      # hardware report
+lsblk                                         # list block/storage devices
+df                                            # disk file systems
+pydf                                          # Python df
+sudo fdisk -l                                 # partition information
+mount | column -t                             # mounted file systems
+free -m                                       # RAM info
+dmidecode                                     # SMBOIS data structure (DMI tables)
+cat /proc/cpuinfo
+cat /proc/meminfo
+cat /proc/version
+cat /proc/scsi/scsi
+cat /proc/partitions
+
+

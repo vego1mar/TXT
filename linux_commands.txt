@@ -1,5 +1,0 @@
-find . -name "*.txt"
-grep -rnw '/path/to/somewhere/' -e 'pattern'
-
-systemctl hibernate
-systemctl restart display-manager.service
