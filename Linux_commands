@@ -60,3 +60,46 @@ cat /proc/scsi/scsi
 cat /proc/partitions
 
 
+# Power management options for OS
+systemctl suspend                             # standby, suspend, suspend-to-RAM
+systemctl hibernate                           # suspend-to-disk
+systemctl hybrid-sleep                        # suspend to RAM and disk
+
+
+# Restarting X11
+systemctl restart display-manager.service     # systemd
+
+
+# Halt OS
+halt                                          # [A]
+                                              # [A]=(terminate all services & processes)
+                                              # powered-on state
+systemctl halt
+shutdown -H now
+
+
+# Power-off OS
+poweroff                                      # [A] + [B]
+                                              # [B]=(power-off the system)
+                                              # ACPI signal + PSU signal
+                                              # powered-off state
+systemctl poweroff
+shutdown -P now
+
+
+# Shutdown OS
+shutdown                                      # [C] + [A] + [B]
+                                              # [C]=(execute commands & custom scripts)
+                                              # powered-off state
+systemctl poweroff
+
+
+# Reboot OS
+reboot                                        # [C] + [A] + [B] + [D]
+                                              # [D]=(power-on the system and boot it in
+                                              # default target state)
+                                              # powered-on state
+shutdown -r
+systemctl reboot
+
+
