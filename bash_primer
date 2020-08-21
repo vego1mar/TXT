@@ -249,4 +249,58 @@ echo "Special Character."
 esac
 
 
+for ((i=0; i<10; i++)); do         # for ((initialize ; condition ; increment)); do; done;
+    echo "Hello World!"            # C-styled for loop
+done
+
+
+for i in {1..10}; do               # ranged-for loop
+    echo "Hello, friend."
+done
+
+
+for i in /var/*; do                # for item in [LIST]; do; done
+    echo $i                        # listed-for loop
+done
+
+
+for ((i=1; i<=10; i++)); do
+    echo $i
+    if [ $i -eq 3 ]; then
+        break                      # structured break
+    fi
+done
+
+
+for ((i=0; i<=10; i++)); do
+    if [ $(($i % 2)) -ne 1 ]; then
+        continue                   # structured continue
+    fi
+    echo $i
+done
+
+
+for ((;;)); do                     # infinite for loop
+done
+
+
+#!/bin/bash
+num=1
+while [ $num -le 10 ]; do          # while [ condition is TRUE ]; do; done
+    echo $(($num * 3))
+    num=$(($num+1))
+done
+
+
+#!/bin/bash
+num=1
+until [ $num -gt 10 ]; do          # until [ condition is FALSE ]; do; done
+    echo $(($num * 3))
+    num=$(($num + 1))
+done
+
+
+while [ true ]; do                 # infinite while loop
+done
+
 
