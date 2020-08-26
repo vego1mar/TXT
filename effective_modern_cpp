@@ -431,6 +431,73 @@ functions with wide contracts: never exhibits undefined behaviors, noexcept-frie
 functions with narrow contracts: if a precondition is violated, results are undefined
 
 
+*** CONSTEXPR OBJECTS AND FUNCTIONS ***
+* conceptually, constexpr indicates a value that's not only constant, it's known during compilation
+* constexpr proclaims 'I can be used in a context where C++ requires a constant expression'
+* by using constexpr whenever possible, you maximize the range of situations in which your objects and functions may be used
+* when applied to objects, it's essentially a beefed-up form of const
+** constexpr objects values are determined during translation (compilation + linking)
+** values known during compilation may be placed in read-only memory (embedded systems)
+** constexpr values can be used in contexts where C++ requires an integral constant expression (array sizes, integral template arguments, enumerator values, alignment specifiers, ...)
+** all constexpr objects are const, but not all const objects are constexpr
+* when applied to functions, things are more nuanced
+** the results of constexpr functions may not be const, nor their values are known during compilation
+** constexpr functions produce compile-time constants when they are called with compile-time constants
+* I/O statements are generally not permitted in constexpr functions
+** if any of the arguments' values is not known during compilation, your code will be rejected (in contexts that demand compile-time constants)
+** constexpr function called with one or more values that are not known during compilation, it acts like a normal function, computing its result at runtime
+** restrictions imposed upon constexpr functions implementation differ between C++11 and C++14
+** in C++11, constexpr functions may contain no more than a single executable return statement, yet ternary operator '?:' and recursion are allowed
+** in C++11, constexpr member function cannot modify the object, they are implicitly const, they have void return types which isn't a literal type
+** in C++14, constexpr functions are limited to taking and returning literal types, which essentially means types that can have values determined during compilation (all built-in types except void, user-defined class with constexpr constructor)
+
+
+int sz;
+const auto arraySize = sz;
+std::array<int, arraySize> data;        // ERROR, arraySize not known during compilation
+constexpr auto arraySize2 = 10;
+std::array<int, arraySize2> data2;      // OK, arraySize2 is constexpr
+
+
+constexpr int pow(int base, int exp) noexcept {
+    return (exp == 0 ? 1 : base * pow(base, exp - 1));
+} // C++11
+
+constexpr int pow(int base, int exp) noexcept {
+    auto result = 1;
+    for (int i=0; i<exp; ++i) result *= base;
+    return result;
+} // C++14
+
+
+class Point {
+public:
+    constexpr Point(double xVal = 0, double yVal = 0) noexcept : x(xVal), y(yVal) {}
+    constexpr double xValue() const noexcept { return x; }
+    constexpr double yValue() const noexcept { return y }
+    constexpr void setX(double newX) noexcept { x = newX; }
+    constexpr void setY(double newY) noexcept { y = newY; }
+    
+private:
+    double x, y;
+}; // constexpr setters are allowed in C++14
+
+constexpr Point midpoint(const Point& p1, const Point& p2) noexcept {
+    return { (p1.xValue() + p2.xValue()) / 2, (p1.yValue() + p2.yValue()) / 2 };
+} // non-member function
+
+constexpr Point reflection(const Point& p) noexcept {
+    Point result;
+    result.setX(-p.xValue());
+    result.setY(-p.yValue());
+    return result;
+}
+
+constexpr Point p1(9.4, 27.7);
+constexpr Point p2(28.8, 5.3);
+constexpr auto mid = midpoint(p1, p2);          // compile-time constants
+constexpr auto reflectedMid = reflection(mid);  // (-19.1, -16.5) known during compilation
+
 
 
 
@@ -454,6 +521,7 @@ Item 11: Prefer deleted functions to private undefined ones.
 Item 12: Declare overriding functions override.
 Item 13: Prefer const_iterators to iterators.
 Item 14: Declare functions noexcept if they won't emit exceptions.
+Item 15: Use constexpr whenever possible.
 
 
 
@@ -522,4 +590,10 @@ Item 14: Declare functions noexcept if they won't emit exceptions.
 * noexcept functions are more optimizable than non-noexcept functions.
 * noexcept is particularly valuable for the move operations, swap, memory deallocation functions, and destructors.
 * Most functions are exception-neutral rather than noexcept.
+
+** Item 15
+* constexpr objects are const and are initialized with values known during compilation.
+* constexpr functions can produce compile-time results when called with arguments whose values are known during compilation.
+* constexpr objects and functions may be used in a wider range of contexts than non-constexpr objects and functions.
+* constexpr is part of an object's or function's interface.
 
