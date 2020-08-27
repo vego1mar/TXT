@@ -42,6 +42,7 @@ sudo /opt/lampp/lampp restart
 lscpu                                         # list processing units
 lshw                                          # list hardware units
 hwinfo                                        # hardware info
+lsmod                                         # list kernel modules from /proc/modules
 lspci                                         # list PCI buses
 lsscsi                                        # list SCSI devices
 lsusb                                         # list USB buses and devices
@@ -70,36 +71,63 @@ systemctl hybrid-sleep                        # suspend to RAM and disk
 systemctl restart display-manager.service     # systemd
 
 
-# Halt OS
+# halt, poweroff, shutdown, reboot
 halt                                          # [A]
                                               # [A]=(terminate all services & processes)
                                               # powered-on state
 systemctl halt
 shutdown -H now
-
-
-# Power-off OS
 poweroff                                      # [A] + [B]
                                               # [B]=(power-off the system)
                                               # ACPI signal + PSU signal
                                               # powered-off state
 systemctl poweroff
 shutdown -P now
-
-
-# Shutdown OS
 shutdown                                      # [C] + [A] + [B]
                                               # [C]=(execute commands & custom scripts)
                                               # powered-off state
 systemctl poweroff
-
-
-# Reboot OS
 reboot                                        # [C] + [A] + [B] + [D]
                                               # [D]=(power-on the system and boot it in
                                               # default target state)
                                               # powered-on state
 shutdown -r
 systemctl reboot
+
+
+# Deepin DDE in Ubuntu
+sudo apt-get update
+sudo apt-get upgrade
+sudo add-apt-repository ppa:ubuntudde-dev/stable
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install ubuntudde-dde
+reboot
+
+
+# Wireless card info
+lspci | grep -i wireless                      # WiFi driver chipset info, first value: '02:00.0'
+lspci -vv -s 02:00.0                          # 'Kernel modules: ath10k_pci'
+modinfo ath10k_pci                            # driver information
+lspci -n -s 02:00.0                           # vendor & product code
+lspci -nn -s 02:00.0
+sudo update-pciids
+lspci | egrep -i 'wifi|wireless|intel|broadcom|realtek'
+lspci -k | less
+lshw -C network
+lshw -C network | grep -B 1 -A 12 'Wireless interface'
+lsusb
+lsmod | less
+lsmod | grep -i wifi                          # USB WiFi device
+lsmod | grep -i huawei                        # 'huawei_cdc_ncm, cdc_wdm, cdc_ncm, usbnet'
+modinfo usbnet
+
+
+# String length (bash)
+mystring='abhishek'
+echo '${#mystring}'                           # bash
+expr length "$mystring"                       # expr
+echo "$mystring" | awk '{print length}'       # awk
+echo -n "$mystring" | wc -m                   # wc
 
 
