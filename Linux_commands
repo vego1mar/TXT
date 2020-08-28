@@ -1,101 +1,129 @@
-# Running Linux version
+/// Running Linux version
 cat /etc/os-release
 hostnamectl                                   # systemd
 lsb_release -a                                # distribution-specific information
+%%
 
 
-# Linux kernel version
+/// Linux kernel version
 uname -r
+%%
 
 
-# Mounting disks
+/// Mounting disks
 sudo fdisk -l
 sudo mkdir -p /media/mydisc && mount /dev/sda1 /media/mydisc
+%%
 
 
-# Finding files
+/// Finding files
 find . -name "*.txt"
+%%
 
 
-# Finding text in files
+/// Finding text in files
 grep -rnw '/path/to/somewhere/' -e 'pattern'
+%%
 
 
-# Displaying lines of a file
+/// Displaying lines in range (lines 77-79 from a file)
 head -79 do_przeczytania | tail +77
 sed -n '77,79p' do_przeczytania
 awk 'NR>=77 && NR<=79' do_przeczytania
+%%
 
 
-# Changing monitor refresh rate
+/// Changing monitor refresh rate
+# This change is not permanent (lasts for user session)
 xrandr --output DP-0 --mode 2560x1080 --rate 200
 
+xrandr                                        # available modes
+xrandr -s 1440x900 -r 75                      # choose mode and refresh rate
+xrandr -r 75                                  # choose just refresh rate
+xrandr                                        # check if it worked
 
-# 'XAMPP: Another web server is already running'
+# Calculate modeline 1600x900 (75 Hz)
+cvt 1600 900 75
+xrandr --newmode "1600x900_75.00"  104.00  1600 -hsync +vsync
+xrandr --verbose --addmode VGA-0  "1600x900_75.00"
+xrandr --output VGA-0 --mode "1600x900_75.00"
+
+# Calculate modeline 2560x1080 (200 Hz)
+cvt 2560 1080 200
+# 2560x1080 199.92 Hz (CVT) hsync: 243.30 kHz; pclk: 872.00 MHz
+# Modeline "2560x1080_200.00"  872.00  2560 2792 3072 3584  1080 1083 1093 1217 -hsync +vsync
+xrandr --newmode "2560x1080_200.00"  872.00  2560 2792 3072 3584  1080 1083 1093 1217 -hsync +vsync
+xrandr --verbose --addmode DP-0  "2560x1080_200.00"
+xrandr --output DP-0 --mode "2560x1080_200.00"
+
+sudo apt-get install compizconfig-settings-manager
+%%
+
+
+/// 'XAMPP: Another web server is already running'
 sudo /etc/init.d/apache2 stop
 sudo /etc/init.d/mysql stop
 sudo /etc/init.d/proftpd stop
 sudo /opt/lampp/lampp restart
+sudo netstat -tunap | grep LISTEN
+%%
 
 
-# Hardware information
+/// Hardware information
 lscpu                                         # list processing units
 lshw                                          # list hardware units
+lshw -short
 hwinfo                                        # hardware info
+hwinfo --short
 lsmod                                         # list kernel modules from /proc/modules
 lspci                                         # list PCI buses
 lsscsi                                        # list SCSI devices
 lsusb                                         # list USB buses and devices
 inxi -Fx                                      # hardware report
 lsblk                                         # list block/storage devices
-df                                            # disk file systems
+df -H                                         # disk file systems
 pydf                                          # Python df
 sudo fdisk -l                                 # partition information
 mount | column -t                             # mounted file systems
 free -m                                       # RAM info
-dmidecode                                     # SMBOIS data structure (DMI tables)
+sudo dmidecode | less                         # SMBOIS data structure (DMI tables)
 cat /proc/cpuinfo
 cat /proc/meminfo
 cat /proc/version
 cat /proc/scsi/scsi
 cat /proc/partitions
+%%
 
 
-# Power management options for OS
+/// Power management options for OS
 systemctl suspend                             # standby, suspend, suspend-to-RAM
 systemctl hibernate                           # suspend-to-disk
 systemctl hybrid-sleep                        # suspend to RAM and disk
 
-
-# Restarting X11
-systemctl restart display-manager.service     # systemd
-
-
-# halt, poweroff, shutdown, reboot
 halt                                          # [A]
-                                              # [A]=(terminate all services & processes)
-                                              # powered-on state
 systemctl halt
 shutdown -H now
 poweroff                                      # [A] + [B]
-                                              # [B]=(power-off the system)
-                                              # ACPI signal + PSU signal
-                                              # powered-off state
 systemctl poweroff
 shutdown -P now
 shutdown                                      # [C] + [A] + [B]
-                                              # [C]=(execute commands & custom scripts)
-                                              # powered-off state
 systemctl poweroff
 reboot                                        # [C] + [A] + [B] + [D]
-                                              # [D]=(power-on the system and boot it in
-                                              # default target state)
-                                              # powered-on state
 shutdown -r
 systemctl reboot
+# [A] : terminate all services & processes
+# [B] : power-off the system (ACPI signal + PSU signal)
+# [C] : execute commands & custom scripts
+# [D] : power-on the system and boot it in default target state
+%%
 
 
-# Deepin DDE in Ubuntu
+/// X11
+systemctl restart display-manager.service     # systemd
+%%
+
+
+/// Deepin DDE in Ubuntu
 sudo apt-get update
 sudo apt-get upgrade
 sudo add-apt-repository ppa:ubuntudde-dev/stable
@@ -103,9 +131,10 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install ubuntudde-dde
 reboot
+%%
 
 
-# Wireless card info
+/// Wireless card information
 lspci | grep -i wireless                      # WiFi driver chipset info, first value: '02:00.0'
 lspci -vv -s 02:00.0                          # 'Kernel modules: ath10k_pci'
 modinfo ath10k_pci                            # driver information
@@ -121,13 +150,245 @@ lsmod | less
 lsmod | grep -i wifi                          # USB WiFi device
 lsmod | grep -i huawei                        # 'huawei_cdc_ncm, cdc_wdm, cdc_ncm, usbnet'
 modinfo usbnet
+%%
 
 
-# String length (bash)
+/// String length (bash)
 mystring='abhishek'
 echo '${#mystring}'                           # bash
 expr length "$mystring"                       # expr
 echo "$mystring" | awk '{print length}'       # awk
 echo -n "$mystring" | wc -m                   # wc
+%%
+
+
+/// Graphics card information
+lspci -k | grep -EA2 'VGA|3D|Display'         # 'Kernel driver in use: amdgpu'
+sudo lspci -v | grep 'VGA' -A 12
+lshw -C 'Display'
+modinfo amdgpu
+%%
+
+
+/// Ubuntu dock
+gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.5
+gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false
+# Use Extension built-in app (since Ubuntu 20.04) to disable the dock or gnome-tweaks
+%%
+
+
+/// steam and steamcmd
+# https://developer.valvesoftware.com/wiki/Command_Line_Options
+# https://github.com/dgibbs64/SteamCMD-Commands-List/blob/master/steamcmdcommands.txt
+
+steamcmd
+login vego_mar my_password                    # Steam user, not profile name
+@sSteamCmdForcePlatformType windows
+set_download_throttle 10000
+force_install_dir "/media/sol/Archiwum/Tmp/"
+app_update 208650 validate                    # AppID; https://steamdb.info/app/208650/
+quit
+%%
+
+
+/// Finding/Displaying line numbers
+cat text_file | grep -n '' | less
+cat ./Linux_commands | grep -n '^///' | grep 'Steam' | sed 's/:.*//'
+%%
+
+
+/// Extracting/Cutting (sub)string up to a colon
+echo "some string: with a colon" | cut -d: -f1
+echo "some string: with a colon" | awk -F: '{print $1}'
+echo "some string: with a colon" | sed 's/:.*//'
+# "some string"
+%%
+
+
+/// mpv
+mpv --audio-pitch-correction=yes --speed=1.0 --hwdec=auto video.mp4
+mpv --audio-pitch-correction=yes --speed=1.0 --hwdec=vdpau --vo=opengl video.mp4
+%%
+
+
+/// rsync
+rsync --archive --verbose --delete /source_dir /target_dir
+rsync --archive --verbose --delete --recursive -checksum /home/moon/Roboczy/ /media/moon/MAXELL\ HDD/MSI-MS-7996/Roboczy/
+# For directories in two different drives:
+diff --brief --recursive --no-dereference --new-file --no-ignore-file-name-case /dir1 /dir2 > diff1.txt
+# For directories on the same drive:
+rsync --recursive --delete --links --checksum --verbose --dry-run /dir1/ /dir2/ > diff2.txt
+%%
+
+
+/// Linux run levels
+systemctl get-default                         # systemd
+systemctl set-default multi-user.target
+
+#  level    systemd target      mode
+#  0        poweroff.target     halt (shuts down system)
+#  1        rescue.target       single-user mode (no network, daemons, non-root logins)       
+#  2        multi-user.target   multi-user mode (no network service and start daemons)
+#  3        multi-user.target   multi-user mode with networking
+#  4        multi-user.target   undefined (not used, user-definable)
+#  5        graphical.target    X11 (runlevel 3 + X Window display manager)
+#  6        reboot.target       reboots the system
+
+ls -ls /etc/rc4.d/ | less                     # start scripts for runlevel 4
+sudo telinit 4                                # changing SysV runlevel to 4
+cat /etc/inittab                              # SysV
+man inittab                                   # Upstart
+man runlevel                                  # systemd
+who -r                                        # runlevel of logged in user
+runlevel                                      # current runlevel
+%%
+
+
+/// VirtualBox Shared Folders on virtual machine with Linux
+sudo cat /etc/shadow | grep moon              # user=moon
+cd /media/moon/VBox_GAs_5.2.20/               # VBoxGuestAdditions.iso
+sudo ./VBoxLinuxAdditions.run
+sudo adduser moon vboxsf                      # add user moon to group vboxsf
+reboot --reboot
+cd /media/moon/VBox_GAs_5.2.20/
+sudo ./VBoxLinuxAdditions.run
+cd /media/sf_Roboczy/                         # shared folder path
+%%
+
+
+/// Installing VirtualBox guest additions
+sudo VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb --replace Oracle_VM_VirtualBox_Extension_Pack-5.2.20.vbox-extpack
+%%
+
+
+/// Extracting .tar.gz archives
+sudo mkdir /opt/intellij-idea
+sudo tar xfz ideaIC-2018.2.5.tar.gz -C /opt/intellij-idea/
+sudo chown 755 /opt/intellij-idea
+%%
+
+/// Extracting archives
+sudo mkdir /opt/sonarqube-utils/
+sudo 7z x sonar-scanner-cli-3.2.0.1227-linux.zip -o/opt/sonarqube-utils/
+sudo 7z x build-wrapper-linux-x86.zip -o/opt/sonarqube-utils/
+%%
+
+
+/// Installing proprietary NVidia driver
+who -r
+runlevel
+sudo nano /boot/grub/grub.cfg // &&>> cat " 3"
+reboot
+sudo ./NVIDIA-Linux-x86_64-410.73.run
+sudo nano /boot/grub/grub.cfg // &&>> cat ""
+reboot
+%%
+
+
+/// apt-get downloaded packages
+ls -ls /var/cache/apt/archives/ | less
+du -sh /var/cache/apt/archives/               # folder size
+%%
+
+
+/// git
+git config --global user.email "you@example.com"
+git config --global user.name "moon"
+
+#  Working dir   current files
+#  INDEX         stage (lounge)
+#  HEAD          last created commit
+
+git init                                      # new repository
+git clone /path/to/repository                 # downloading repository
+git clone username@host:/path/to/repository
+git add <filename>                            # adding changes to INDEX
+git add *
+git commit -m "Commit message"                # adding changes to HEAD (locally)
+git push origin master                        # confirming changes (remotely)
+git push <remote-server> <branch>
+git remote add origin <server>                # remote connection
+git checkout -b feature_x                     # create branch if not created
+git checkout master                           # switch to branch 'master'
+git branch -d feature_x
+git push origin <branch>
+git pull                                      # update repository (fetch & merge)
+git merge <branch>                            # combining branches together
+git diff <source_branch> <target_branch>      # resolving conflicts
+git add <filename>
+git tag 1.0.0 1b2e1d63ff                      # tagging (versioning)
+git tag <tag_name> <commit_number>            # repository history (log)
+git log
+git log --author=bob
+git log --pretty=oneline
+git log --graph --oneline --decorate --all
+git log --name-status
+git log --help
+git checkout -- <filename>                    # rollback changes
+git fetch origin                              # revoke changes
+git reset --hard origin/master
+gitk                                          # built-in GUI for git
+git config color.ui true                      # coloured output
+git config format.pretty oneline              # history entry as one-liner
+git add -i                                    # interactive adding
+
+git init
+cd /media/moon/MAXELL\ HDD/MSI-MS-7996
+git checkout -b roboczy
+cp -ru /home/moon/Roboczy/ /media/moon/MAXELL\ HDD/MSI-MS-7996/Roboczy
+git add Roboczy/
+git stage ${deleted}
+git commit -m "Standard backup"
+git log --graph --oneline --decorate --all
+%%
+
+
+/// Removing Linux kernel
+uname -r                                      # DO NOT REMOVE THIS KERNEL!
+dpkg --list | grep linux-image                # installed kernels
+sudo apt-get purge linux-image-x.x.x-x-generic 
+sudo update-grub2 
+reboot
+
+sudo apt install synaptic                     # an alternative
+sudo apt autoremove                           # it'll leave one version as a fallback
+%%
+
+
+/// Installing Linux kernel
+# For 64-bit OS download files from http://kernel.ubuntu.com/~kernel-ppa/mainline/: 
+# linux-headers-xxxxxx-generic-xxxxxx_amd64.deb
+# linux-headers-xxxxxx_all.deb
+# linux-image-xxxxxx-generic-xxxxxx_amd64.deb
+sudo dpkg -i *.deb
+reboot
+%%
+
+
+/// qpdf
+qpdf --encrypt user-password owner-password 256 -- in.pdf out.pdf
+%%
+
+
+/// Custom login screen wallpaper in Deepin
+# Copy wallpaper 16.jpg into /usr/share/wallpapers/deepin.
+# A fixed name file like 192dc9abbc741b404b5c7c2d9a3b123c.jpg will appear in /var/cache/image-blur.
+# The custom wallpaper will be blacked or blured.
+# Replace it with 16.jpg without changing the name.
+
+sudo cp ~/Documents/Roboczy/16.jpg /usr/share/wallpapers/deepin/
+sudo cp ~/Documents/Roboczy/16.jpg /var/cache/image-blur/192dc9abbc741b404b5c7c2d9a3b123c.jpg
+%%
+
+
+/// ffmpeg (merging video and audio streams, MPEG-DASH)
+# In case of MP4 format (all, except 1440p 60fps & 2160p 60fps):
+ffmpeg -i videoplayback.mp4 -i videoplayback.m4a -c:v copy -c:a copy output.mp4
+# In case of WebM format (1440p 60fps and 2160p 60fps):
+ffmpeg -i videoplayback.webm -i videoplayback.m4a -c:v copy -c:a copy output.mkv
+
+ffmpeg -i videoplayback.m4a -ab 128000 -vn music.mp3
+ffmpeg -i video.webm -i audio.m4a -c:v libx264 -c:a copy out.mp4
+%%
 
 

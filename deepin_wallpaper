@@ -1,8 +1,0 @@
-Copy wallpaper 16.jpg into /usr/share/wallpapers/deepin.
-A file with a fixed name like 192dc9abbc741b404b5c7c2d9a3b123c.jpg will appear in /var/cache/image-blur.
-The custom wallpaper will be blacked or blured.
-Replace it with 16.jpg without changing the name.
-
-sudo cp ~/Documents/Roboczy/16.jpg /usr/share/wallpapers/deepin/
-sudo cp ~/Documents/Roboczy/16.jpg /var/cache/image-blur/192dc9abbc741b404b5c7c2d9a3b123c.jpg
-
