@@ -304,3 +304,99 @@ while [ true ]; do                 # infinite while loop
 done
 
 
+function_name() {                  # function definition, new style
+    true                           # must precede any calls to the function
+}
+
+
+function_name {                    # function definition, old style
+    return 0
+}
+
+
+hello () {
+    echo "Hello World"
+}
+hello                              # function call
+
+
+error () {
+    blabla                         # 'blabla: command not found'
+    return 0                       # only integers 1-255; exit status 0 goes to #?
+                                   # 0 is a success, non-zero is a failure
+                                   # if return is not present, status is the last statement execution
+                                   # immediately terminates a function
+}
+error
+echo "Status: $?"
+
+
+#!/bin/bash
+fun () {
+    echo "$1"                      # Yes
+    echo "$2"                      # 7
+}
+echo "$1"                          # Cool
+echo "$2"                          # Stuff
+fun Yes 7                          # bash function arguments
+./fun.sh Cool Stuff                # bash script arguments
+
+
+#!/bin/bash
+v1='A'
+v2='B'
+myfun() {
+    local v1='C'                   # local variable v1
+    v2='D'                         # global variable v2
+    echo "$v1 $v2"
+}
+echo "$v1 $v2"                     # A B
+myfun                              # C D
+echo "$v1 $v2"                     # A D
+
+
+#!/bin/bash
+factorial () {
+    if [ $1 -le 1 ]; then                        # base case
+        echo 1
+    else
+        last=$(factorial $(( $1 - 1 )) )         # recursive case
+        echo $(( $1 * last ))
+    fi
+}
+echo -n "4! is: "
+factorial 4
+
+
+function myfunc() {
+    local myresult='some value'
+    echo "$myresult"
+}
+result=$(myfunc)                                 # command substitution as return value
+echo $result
+
+
+function myfunc() {
+    local __resultvar=$1
+    local myresult='some value'
+    eval $__resultvar="'$myresult'"              # reinterpret as result='some value'
+}
+myfunc result
+echo $result
+
+
+function myfunc() {
+    local __resultvar=$1
+    local myresult='some value'                  # a place for a usual function body
+    if [[ "$__resultvar" ]]; then
+        eval $__resultvar="'$myresult'"          # result='some value'
+    else
+        echo "$myresult"                         # stdout: some value
+    fi
+}
+myfunc result                                    # returning by (global) value name
+result2=$(myfunc)                                # returning by command substitution
+echo $result
+echo $result2
+
+
