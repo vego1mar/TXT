@@ -499,6 +499,129 @@ constexpr auto mid = midpoint(p1, p2);          // compile-time constants
 constexpr auto reflectedMid = reflection(mid);  // (-19.1, -16.5) known during compilation
 
 
+*** CONST MEMBER FUNCTIONS ***
+* mutable: permits modification of the class member declared mutable even if the containing object is declared const; mutable is used to specify that the member does not affect the external visible state of the class (mutexes, memo caches, lazy evaluation, ...)
+* the safe bet is that const member functions will be a subject to concurrent execution, and that's why you should ensure that yout const member functions are thread safe
+* only data that are mutable & shared requires synchronization; unshared & mutable, unshared & immutable, shared & immutable are not a problem
+
+class Polynomial {
+public:
+    using RootsType = std::vector<double>;
+    RootsType roots() const {
+        if (!rootsAreValid) { cacheRoots(); rootsAreValid = true; }
+        return rootVals;
+    }
+private:
+    mutable bool rootsAreValid{ false };
+    mutable RootsType rootVals{};
+};
+Polynomial p;
+auto rootsOfP = p.roots();                      // thread 1
+auto valsGivingZero = p.roots();                // thread 2
+// data race: reading and writing the same memory without synchronization
+// this code has undefined behavior
+// the easiest way to address the issue is to employ a mutex
+// mutable std::mutex m; as a field & std::lock_guard<std::mutex> g(m); in roots()
+// locking and unlocking are non-const operations, thus mutable keyword (also applying M&M rule)
+// std::mutex is a move-only type, thus Polynomial with m loses ability to be copy constructed
+
+class Point {
+public:
+    double distanceFromOrigin() const noexcept {
+        ++callCount;
+        return std::sqrt((x * x) + (y * y));
+    }
+private:
+    mutable std::atomic<unsigned> callCount{ 0 };
+    double x, y;
+};
+// counting how many times a member function is called
+// std::atomics are often a less expensive way to go than std::mutexes
+
+
+*** SPECIAL MEMBER FUNCTION GENERATION ***
+* in official C++ parlance, the special member functions are the ones that C++ is willing to generate on its own; these functions are generated only if they're needed, i.e., if some code uses them without their being expressly declared in the class
+* C++98 has four such functions: the default constructor, the destructor, the copy constructor, the copy assignment operator
+* C++11 has six such functions: the default constructor, the destructor, the copy constructor, the copy assignment operator, the move constructor, the move assignment operator
+** generated special member functions are implicitly public and inline; destructor may be also virtual
+** a default constructor is generated only if the class declares no constructor at all
+** a destructor is noexcept by default, and is virtual only if a base class destructor is virtual
+** a copy constructor is generated only if the class lacks a user-declared copy constructor; deleted if the class declares a move operation; won't be generated in a class with a user-declared copy assignment operator or destructor
+** a copy assignment operator is generated only if the class lacks a user-declared copy assignment operator; deleted if the class declares a move operation; won't be generated in a class with a user-declared copy constructor or destructor
+** a move constructor and a move assignment operator is generated only if the class contains no user-declared copy operations, move operations, or destructor
+
+* the move operations perform 'memberwise moves' on the non-static data members of the class; they also move-construct its base class parts if they are any; the heart of each 'memberwise' move is application of std::move, that is a member will be moved if it is move-enabled (if it supports move semantics), otherwise it'll be copied
+* the move operations are generated when they're needed; the move operations aren't generated if you declare them yourself
+* copy operations are independent: copy constructor and copy assignment operator comes together (when both copy operations are treated as defaulted)
+* move operations are not independent: if you declare either, that prevents compilers from generating the other; move operations won't be generated for any class that explicitly declares a copy operation
+** the rationale is that if you need a custom move constructor, then there's probably something wrong about generated memberwise move assignment operator
+** declaring a copy operation declares that the normal approach to memberwise copying an object isn't appropriate for the class; declaring a move operation causes compilers to disable the copy operations by deleting them
+** all of this is logical if you think about it, yet this is also about C++98-styled code to behave like in C++98
+
+The Rule of Three states that if you declare any of a copy constructor, copy assignment operator, or destructor, you should declare all three. The justification for this is that almost always copy operation stemmed from the class performing some kind of resource management, which implied that:
+* whathever resource management was being done in one copy operation probably needed to be done in the other copy operation
+* the class destructor would also be participating in management of the resource, usually releasing it
+
+A consequence of the Rule of Three is that the presence of a user-declared destructor indicates that simple memberwise copy is unlikely to be appropriate for the copying operations in the class. The existence of a user-declared destructor has no impact on compilers' willingness to generate copy operations. That continues to be the case in C++11, but only because restricting the conditions would break too much legacy code (all STL containers declare 'the big three').
+
+So move operations are generated for classes (when needed) only if these three things are true:
+* no copy operations are declared in the class
+* no move operations are declared in the class
+* no destructor is declared in the class
+
+class StringTable {
+public:
+    StringTable() {}
+private:
+    std::map<int, std::string> values;
+};
+// copy & move operations and destructor will automatically be generated if they'll be used
+// no user-declared copy operations, thus they'll be implicitly generated
+// no explicit copy & move operations, and destructor allows for generated move operations
+
+class StringTable {
+public:
+    StringTable() { makeLogEntry("Creating StringTable object."); }
+    ~StringTable() { makeLogEntry("Destroying StringTable object."); }
+private:
+    std::map<int, std::string> values;
+};
+// destructor side effect: it prevents the move operations from being generated
+// the class is no longer move-enabled, but move requests will compile and run (as copies)
+
+class StringTable {
+public:
+    StringTable() { makeLogEntry("Creating StringTable object."); }
+    ~StringTable() { makeLogEntry("Destroying StringTable object."); };
+    StringTable(StringTable&&) = default;
+    StringTable(const StringTable&) = default;
+    StringTable& operator=(StringTable&&) = default;
+    StringTable& operator=(const StringTable&) = default;
+};
+// no previous problems
+// defaulted default constructor: implicitly defined even if other constructors are present
+
+class Widget {
+    template<typename T> Widget(const T& rhs);
+    template<typename T> Widget& operator=(const T& rhs);
+};
+// member function template: construct/assign Widget from anything
+// compilers will still generate copy and move operations for Widget beside this templates
+
+class Base {
+public:
+    explicit Base(int) {}
+    virtual ~Base() noexcept = default;         // virtual for polymorphic base class
+    Base(Base&&) = default;                     // moving
+    Base& operator=(Base&&) = default;          // moving at assignment
+    Base(const Base&) = default;                // copying
+    Base& operator=(const Base&) = default;     // copying at assignment
+};
+// The Rule of Five
+A constructor with a single non-default parameter (until C++11) that is declared without the function specifier explicit is called a converting constructor. It is said that a converting constructor specifies an implicit conversion from the types of its arguments (if any) to the type of its class. Implicitly-declared and user-defined non-explicit copy constructors and move constructors are converting constructors.
+
+
+
 
 
 *** ITEMS ***
@@ -522,6 +645,8 @@ Item 12: Declare overriding functions override.
 Item 13: Prefer const_iterators to iterators.
 Item 14: Declare functions noexcept if they won't emit exceptions.
 Item 15: Use constexpr whenever possible.
+Item 16: Make const member functions thread safe.
+Item 17: Understand special member function generation.
 
 
 
@@ -596,4 +721,15 @@ Item 15: Use constexpr whenever possible.
 * constexpr functions can produce compile-time results when called with arguments whose values are known during compilation.
 * constexpr objects and functions may be used in a wider range of contexts than non-constexpr objects and functions.
 * constexpr is part of an object's or function's interface.
+
+** Item 16
+* Make const member functions thread safe unless you're certain they'll never be used in a concurrent context.
+* Use of std::atomic variables may offer better performance than a mutex, but they're suited for manipulation of only a single variable or memory location.
+
+** Item 17
+* The special member functions are those compilers may generate on their own: default constructor, destructor, copy operations, and move operations.
+* Move operations are generated only for classes lacking explicitly declared move operations, copy operations, and a destructor.
+* The copy constructor is generated only for classes lacking an explicitly declared copy constructor, and it's deleted if a move operation is declared. The copy assignment operator is generated only for classes lacking an explicitly declared copy assignment operator, and it's deleted if a move operation is declared. Generation of the copy operations in classes with an explicitly declared destructor is deprecated.
+* Member function templates never suppress generation of special member functions.
+
 
