@@ -182,7 +182,7 @@ gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false
 # https://github.com/dgibbs64/SteamCMD-Commands-List/blob/master/steamcmdcommands.txt
 
 steamcmd
-login vego_mar my_password                    # Steam user, not profile name
+login login my_password                       # Steam user, not profile name
 @sSteamCmdForcePlatformType windows
 set_download_throttle 10000
 force_install_dir "/media/sol/Archiwum/Tmp/"
@@ -389,6 +389,12 @@ ffmpeg -i videoplayback.webm -i videoplayback.m4a -c:v copy -c:a copy output.mkv
 
 ffmpeg -i videoplayback.m4a -ab 128000 -vn music.mp3
 ffmpeg -i video.webm -i audio.m4a -c:v libx264 -c:a copy out.mp4
+%%
+
+
+/// Running on physical system or virtual machine?
+sudo dmidecode -s system-manufacturer         # Desktop Management Interface
+                                              # innotek Gmbh for VirtualBox
 %%
 
 
