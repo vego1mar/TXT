@@ -117,7 +117,8 @@ proxy class: a class that exists for the purpose of emulating and augmenting the
 // expression template
 // originally developed to improve the efficiency of numeric code
 Matrix sum = m1 + m2 + m3 + m4;
-auto sum = static_cast<Matrix>(m1 + m2 + m3 + m4); // explicitly typed initializer idiom
+auto sum = static_cast<Matrix>(m1 + m2 + m3 + m4); 
+// explicitly typed initializer idiom
 // operator+ for Matrix should return a proxy for the result
 // for two Matrix objects the result should be Sum<Matrix, Matrix>
 // we need to provide an implicit conversion from the proxy class to Matrix
@@ -621,6 +622,51 @@ public:
 A constructor with a single non-default parameter (until C++11) that is declared without the function specifier explicit is called a converting constructor. It is said that a converting constructor specifies an implicit conversion from the types of its arguments (if any) to the type of its class. Implicitly-declared and user-defined non-explicit copy constructors and move constructors are converting constructors.
 
 
+*** STD::UNIQUE_PTR ***
+* it's the same as std::auto_ptr but with move semantics that is unavailable in C++98
+* by default, std::unique_ptr's are the same size as raw pointers (safe assumption)
+* std::unique_ptr embodies exclusive ownership semantics
+* a non-null std::unique_ptr always owns what it points to
+* copying a std::unique_ptr isn't allowed, because it is a move-only type
+* the common use cases for std::unique_ptr's are factory functions and Pimpl Idiom implementation
+* there is no indexing operator[] for the single-object form std::unique_ptr<T>, while the array form  std::unique_ptr<T[]> lacks dereferencing operators (operator* and operator->)
+** std::unique_ptr<T[]> make sense when you're using a C-like API that returns a raw pointer to a heap array that you assume ownership of
+** std::array, std::vector, std::string are virtually always better data structures choices than raw pointers
+* if std::unique_ptr is a data member and object is being destroyed, std::unique_ptr would be also destroyed
+** if the ownership chain got interrupted due to an exception or other atypical control flow, the std::unique_ptr owning the managed resource would eventually have its destructor called
+** if an exception propagates out of a thread's primary function (for the program's initial thread) or if a noexcept specification is violated, local objects may not be destroyed
+** if std::abort or an exit function (std::exit, std::quick_exit, std::_Exit) is called, local objects definitely won't be destroyed
+* by default, std::unique_ptr destruction would take place via delete, but, during construction, std::unique_ptr objects can be configured to use custom deleters (arbitrary functions, function objects, function pointers)
+** custom deleters may change the size of the smart pointer
+*** deleters that are function pointers generally cause the size of a std::unique_ptr to grow from one word to two
+*** for function object deleters the change in size is the sizeof() that function object
+*** stateless function objects (from lambda expressions with no captures) incur no size penalty
+** when a custom deleter is to be used, its type must be specified as the second type argument to std::unique_ptr
+** for custom deleters objects will ultimately be deleted via a base class pointer, thus, for that to work, the base class must have a virtual destructor
+* C++11's smart pointers prohibit implicit conversions from a raw to smart pointer
+** to assume ownership of the object created via new we are using reset()
+** in templates, each use of new should be perfect-forwarded with std::forward for passed arguments to the function template
+* std::unique_ptr easily and efficiently converts to a std::shared_ptr
+
+template<typename... Ts> auto makeInvestment(Ts&&... params) {
+    auto delInvmt = [](Investment* pInvestment) {
+        makeLogEntry(pInvestment);
+        delete pInvestment;
+    };
+    std::unique_ptr<Investment, decltype(delInvmt)> pInv(nullptr, delInvmt);
+    if (stock) { pInv.reset(new Stock(std::forward<Ts>(params)...)); }
+    else if (bond) { pInv.reset(new Bond(std::forward<Ts>(params)...)); }
+    else if (realEstate) { pInv.reset(new RealEstate(std::forward<Ts>(params)...)); }
+    return pInv;
+} // C++14; Stock & Bond & RealEstate : Investment
+
+template<typename... Ts> 
+std::unique_ptr<Investment, void (*)(Investment*)> makeInvestment(Ts&&... params);
+// sizeof(Investment) + sizeof(void (*)(Investment*))
+
+std::shared_ptr<Investment> sp = makeInvestment(arguments);
+// implicit conversion to std::shared_ptr
+
 
 
 
@@ -647,6 +693,9 @@ Item 14: Declare functions noexcept if they won't emit exceptions.
 Item 15: Use constexpr whenever possible.
 Item 16: Make const member functions thread safe.
 Item 17: Understand special member function generation.
+
+** Smart pointers
+Item 18: Use std::unique_ptr for exclusive-ownership resource management.
 
 
 
@@ -731,5 +780,10 @@ Item 17: Understand special member function generation.
 * Move operations are generated only for classes lacking explicitly declared move operations, copy operations, and a destructor.
 * The copy constructor is generated only for classes lacking an explicitly declared copy constructor, and it's deleted if a move operation is declared. The copy assignment operator is generated only for classes lacking an explicitly declared copy assignment operator, and it's deleted if a move operation is declared. Generation of the copy operations in classes with an explicitly declared destructor is deprecated.
 * Member function templates never suppress generation of special member functions.
+
+** Item 18
+* std::unique_ptr is a small, fast, move-only smart pointer for managing resources with exclusive-ownership semantics.
+* By default, resource destruction takes place via delete, but custom deleters can be specified. Stateful deleters and function pointers as deleters increase the size of std::unique_ptr objects.
+* Converting a std::unique_ptr to a std::shared_ptr is easy.
 
 
