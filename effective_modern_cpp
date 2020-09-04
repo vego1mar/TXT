@@ -641,7 +641,7 @@ A constructor with a single non-default parameter (until C++11) that is declared
 *** deleters that are function pointers generally cause the size of a std::unique_ptr to grow from one word to two
 *** for function object deleters the change in size is the sizeof() that function object
 *** stateless function objects (from lambda expressions with no captures) incur no size penalty
-** when a custom deleter is to be used, its type must be specified as the second type argument to std::unique_ptr
+** when a custom deleter is to be used, its type must be specified as the second type argument to std::unique_ptr; deleter type is part of a pointer type
 ** for custom deleters objects will ultimately be deleted via a base class pointer, thus, for that to work, the base class must have a virtual destructor
 * C++11's smart pointers prohibit implicit conversions from a raw to smart pointer
 ** to assume ownership of the object created via new we are using reset()
@@ -667,6 +667,82 @@ std::unique_ptr<Investment, void (*)(Investment*)> makeInvestment(Ts&&... params
 std::shared_ptr<Investment> sp = makeInvestment(arguments);
 // implicit conversion to std::shared_ptr
 
+
+*** STD::SHARED_PTR ***
+* an object accessed via std::shared_ptr's has its lifetime managed by those pointers through shared ownership
+* no specific std::shared_ptr owns the object; instead, all std::shared_ptr's pointing to it collaborate to ensure its destruction at the point where it's no longer needed (when the last std::shared_ptr pointing to an object stops pointing there, that std::shared_ptr destroys the object it points to)
+* a std::shared_ptr can tell whether it's the last one pointing to a resource by consulting the resource's reference count, a value associated with the resource that keeps track of how many std::shared_ptr's point to it
+** std::shared_ptr constructors increment this count (usually)
+** move construction and move assignment is faster than its copy equivalents, because it doesn't require incrementing the reference count
+** std::shared_ptr destructors decrement it
+** copy assignment operators do both
+* the existence of the reference count has its performance implications
+** std::shared_ptr's are twice the size of a raw pointer (raw pointer to the resource + raw pointer to the resource's reference count)
+** memory for the reference count must be dynamically allocated (pointed to objects have no place to store a reference count); cost of this may be avoided using std::make_shared
+** increments and decrements of the reference count must be atomic (to be thread-safe)
+* std::shared_ptr uses delete as its default resource-destruction mechanism
+* std::shared_ptr supports custom deleters
+** deleter type is not part of pointer type
+** specifying a custom deleter doesn't change the size of a std::shared_ptr object
+** regardless of deleter, a std::shared_ptr object is two pointers in size
+** custom deleters cannot be combined with std::make_shared
+* the reference count is part of a larger data structure known as the control block
+** there's a control block for each object managed by std::shared_ptr's
+** control block may contains the reference count, a weak count (a secondary reference count), other data (custom deleters, custom allocators, ...)
+** thus, reinvisioned, std::shared_ptr<T> contains PtrToT and PtrToControlBlock
+** we assume that an object's control block is set up by the function creating the first std::shared_ptr to the object; in practice, we use rules for control block creation
+*** std::make_shared always create a control block
+*** a control block is created when a std::shared_ptr is constructed from a unique-ownership pointer
+*** when a std::shared_ptr constructor is called with a raw pointer, it creates a control block
+** the usual control block implementation makes use of inheritance and virtual function to ensure that the pointed-to object is properly destroyed
+* having dynamically allocated control block, arbitrarily large deleters and allocators, virtual function machinery, and atomic reference count manupulations, std::shared_ptr exact a very reasonable cost
+** the control block is only about three words in size, in typical conditions (defaulted)
+** its allocation is essentially free (it's incorporated into the memory allocation for the object being pointed to)
+** dereferencing is no more expensive than dereferencing a raw pointer
+** atomic operations entails to one-two individual machine instructions
+** the virtual function machinery in the control block is generally used only once per object at destruction time
+* std::shared_ptr's are designed only for pointers to single objects, there's no std::shared_ptr<T[]>
+** you still can point to an array with array-to-pointer decay and specify a custom deleter with delete[], yet std::shared_ptr offers no operator[], so indexing requires expressions based on pointer arithmetic
+** declaring a smart pointer to a dumb array is almost always a sign of a bad design (use std::vector instead)
+
+sp1 = sp2;
+// the reference count for sp1 is decremented, for sp2 is incremented
+
+auto loggingDel = [](Widget *pw) {
+    makeLogEntry(pw);
+    delete pw;
+};
+std::unique_ptr<Widget, decltype(loggingDel)> upw(new Widget, loggingDel);
+std::shared_ptr<Widget> spw(new Widget, loggingDel);
+
+auto pw = new Widget;                           // raw pointer
+std::shared_ptr<Widget> spw1(pw, loggingDel);   // create control block for *pw
+std::shared_ptr<Widget> spw2(pw, loggingDel);   // create control block for *pw
+// 'a complimentary ride on the particle accelerator of undefined behavior'
+std::shared_ptr<Widget> spw2(spw1);             // same control block as spw1
+
+std::vector<std::shared_ptr<Widget>> processedWidgets;
+void Widget::process() {
+    processedWidgets.emplace_back(this);
+    // it's passing a raw pointer to a container of std::shared_ptr's
+    // thus they will create a new control block for the pointed-to Widget of *this
+    // if there are std::shared_ptr's outside the member function that already point to that Widget,
+    // it's match for undefined behavior
+}
+
+class Widget : public std::enable_shared_from_this<Widget> { ... };
+// if you want to be able to safely create a std::shared_ptr from a this pointer
+// The Curiously Recurring Template Pattern (CRTP)
+// a derived class inherits from a base class by templatizing on a derived class
+void Widget::process() {
+    processedWidgets.emplace_back(shared_from_this());
+    // add std::shared_ptr to current object to processedWidgets
+    // use std::enable_shared_from_this::shared_from_this is a member function
+    // internally, it looks up the control block for the current object, and creates a referee
+    // the design relies on the current object having an associated control block
+    // (there must an existing std::shared_ptr that points to the current object)
+    // if no such std::shared_ptr exists, behavior is undefined (but may throw an exception)
+}
 
 
 
@@ -696,7 +772,7 @@ Item 17: Understand special member function generation.
 
 ** Smart pointers
 Item 18: Use std::unique_ptr for exclusive-ownership resource management.
-
+Item 19: Use std::shared_ptr for shared-ownership resource management.
 
 
 *** THINGS TO REMEMBER ***
@@ -785,5 +861,11 @@ Item 18: Use std::unique_ptr for exclusive-ownership resource management.
 * std::unique_ptr is a small, fast, move-only smart pointer for managing resources with exclusive-ownership semantics.
 * By default, resource destruction takes place via delete, but custom deleters can be specified. Stateful deleters and function pointers as deleters increase the size of std::unique_ptr objects.
 * Converting a std::unique_ptr to a std::shared_ptr is easy.
+
+** Item 19
+* std::shared_ptr's offer convenience approaching that of garbage collection for the shared lifetime management of arbitrary resources.
+* Compared to std::unique_ptr, std::shared_ptr objects are typically twice as big, incur overhead for control blocks, and require atomic reference count manipulations.
+* Default resource destruction is via delete, but custom deleters are supported. The type of the deleter has no effect on the type of the std::shared_ptr.
+* Avoid creating std::shared_ptr's from variables of raw pointer type.
 
 
