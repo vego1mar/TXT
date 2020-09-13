@@ -92,6 +92,7 @@ cat /proc/meminfo
 cat /proc/version
 cat /proc/scsi/scsi
 cat /proc/partitions
+blkid                                         # UUID for partitions
 %%
 
 
@@ -395,6 +396,12 @@ ffmpeg -i video.webm -i audio.m4a -c:v libx264 -c:a copy out.mp4
 /// Running on physical system or virtual machine?
 sudo dmidecode -s system-manufacturer         # Desktop Management Interface
                                               # innotek Gmbh for VirtualBox
+%%
+
+
+/// Displaying the difference between two files
+diff file1 file2
+diff --color --side-by-side file1.txt file2.txt
 %%
 
 
