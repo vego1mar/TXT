@@ -718,7 +718,7 @@ std::shared_ptr<Widget> spw(new Widget, loggingDel);
 auto pw = new Widget;                           // raw pointer
 std::shared_ptr<Widget> spw1(pw, loggingDel);   // create control block for *pw
 std::shared_ptr<Widget> spw2(pw, loggingDel);   // create control block for *pw
-// 'a complimentary ride on the particle accelerator of undefined behavior'
+                                                // undefined behavior
 std::shared_ptr<Widget> spw2(spw1);             // same control block as spw1
 
 std::vector<std::shared_ptr<Widget>> processedWidgets;
@@ -743,6 +743,58 @@ void Widget::process() {
     // (there must an existing std::shared_ptr that points to the current object)
     // if no such std::shared_ptr exists, behavior is undefined (but may throw an exception)
 }
+
+
+*** STD::WEAK_PTR ***
+* std::weak_ptr tracks when it dangles, that is when the object it is supposed to point to no longer exists
+** std::weak_ptr's can detect when they dangle only when an object's lifetime is managed by std::shared_ptr's
+* std::weak_ptr's are typically created from std::shared_ptr's, but they don't affect the reference count of the object they point to
+* std::weak_ptr is an augmentation of std::shared_ptr
+** std::weak_ptr can't be dereferenced
+** std::weak_ptr can't be testes for nullness
+* accessing std::weak_ptr may be done by creating a std::shared_ptr from the std::weak_ptr
+* std::weak_ptr's objects are the same size as std::shared_ptr's, they make use of the same control blocks
+* std::weak_ptr's don't participate in the shared ownership of objects
+** there's a second reference count in the control block, and it's manipulated by them
+
+* as a use case for std::weak_ptr consider factory function that loads and caches expensive objects
+** a second use case: Observer design pattern
+** in most implementations, each subject contains a data member holding pointers to its observers
+** subjects have no interest in controlling the lifetime of their observers
+** subjects have a great interest in making sure that if an observer gets destroyed, subjects don't try to subsequently access it
+
+** a third use case: A --(std::shared_ptr)--> B <--(std::shared_ptr)-- C
+** we want to have a pointer from B back to A
+** there are three choices: a raw pointer, a std::shared_ptr, a std::weak_ptr
+** a raw pointer won't be able to detect a dangling pointer
+** a std::shared_ptr will provide a reference count of one for both A and B
+** a std::weak_ptr will be able to detect dangling pointer and will not interfere with the reference count
+
+
+auto spw = std::make_shared<Widget>();
+std::weak_ptr<Widget> wpw(spw);
+spw = nullptr;
+if (wpw.expired()) {
+    // std::weak_ptr's that dangle are said to have expired
+    // note, that separating the check and the dereferencing action would introduce a race condition
+    // another thread might be involved, thus causing an undefined behavior
+}
+
+auto spw2 = wpw.lock();                         // null if wpw expired
+std::shared_ptr<Widget> spw3(wpw);              // if wpw expired throws std::bad_weak_ptr
+
+std::shared_ptr<const Widget> fastLoadWidget(WidgetID id) {
+    static std::unordered_map<WidgetID, std::weak_ptr<const Widget>> cache;
+    auto objPtr = cache[id].lock();
+    if (!objPtr) {
+        objPtr = loadWidget(id);
+        cache[id] = objPtr;
+    }
+    return objPtr;
+}
+// a factory function that produces smart pointers to read-only objects based on a unique ID
+// it's common for IDs to be used repeatedly, loadWidget() is an expensive call
+// reasonable optimization is caching and destroying Widgets when they're no longer in use
 
 
 
@@ -773,6 +825,8 @@ Item 17: Understand special member function generation.
 ** Smart pointers
 Item 18: Use std::unique_ptr for exclusive-ownership resource management.
 Item 19: Use std::shared_ptr for shared-ownership resource management.
+Item 20: Use std::weak_ptr for std::shared_ptr-like pointers that can dangle.
+
 
 
 *** THINGS TO REMEMBER ***
@@ -867,5 +921,9 @@ Item 19: Use std::shared_ptr for shared-ownership resource management.
 * Compared to std::unique_ptr, std::shared_ptr objects are typically twice as big, incur overhead for control blocks, and require atomic reference count manipulations.
 * Default resource destruction is via delete, but custom deleters are supported. The type of the deleter has no effect on the type of the std::shared_ptr.
 * Avoid creating std::shared_ptr's from variables of raw pointer type.
+
+** Item 20
+* Use std::weak_ptr for std::shared_ptr-like pointers that can dangle.
+* Potential use cases for std::weak_ptr include caching, observer lists, and the prevention of std::shared_ptr cycles.
 
 
