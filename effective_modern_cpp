@@ -755,7 +755,8 @@ void Widget::process() {
 * accessing std::weak_ptr may be done by creating a std::shared_ptr from the std::weak_ptr
 * std::weak_ptr's objects are the same size as std::shared_ptr's, they make use of the same control blocks
 * std::weak_ptr's don't participate in the shared ownership of objects
-** there's a second reference count in the control block, and it's manipulated by them
+** there's a second reference count in the control block, and it's manipulated by them (weak count)
+* as long as std::weak_ptr refer to a control block, that control block must continue to exist
 
 * as a use case for std::weak_ptr consider factory function that loads and caches expensive objects
 ** a second use case: Observer design pattern
@@ -797,6 +798,75 @@ std::shared_ptr<const Widget> fastLoadWidget(WidgetID id) {
 // reasonable optimization is caching and destroying Widgets when they're no longer in use
 
 
+*** STD::MAKE_UNIQUE & STD::MAKE_SHARED ***
+* std::make_shared is part of C++11, std::make_unique is part of C++14
+* STL make functions are: std::make_shared, std::make_unique, std::allocate_shared
+** make function take an arbitrary set of arguments, perfect-forwards them to the constructor for a dynamically allocated object, and return a smart pointer to that object
+** std::allocate_shared acts like std::make_shared, yet its first argument is an allocator object
+* there are two reasons to prefer make functions
+** make function don't repeat type being created, new does
+** it provides exception safety
+** for std::unique_ptr custom deleters and braced initializers are scenerios where make functions are problematic
+** for std::shared_ptr problematic are custom deleters, braced initializers, custom operator new, custom operator delete
+* std::make_shared improves code efficiency; this also applicable to std::allocate_shared
+* make functions do not permit of custom deleters
+* if the object type is quite large and the time between destruction of the last std::shared_ptr and the last std::weak_ptr is significant, a lag can occur between when an object is destroyed and when the memory it occupied is freed
+
+
+auto upw1(std::make_unique<Widget>());
+std::unique_ptr<Widget> upw2(new Widget);
+
+void processWidget(std::shared_ptr<Widget> spw, int priority);
+int computePriority();
+processWidget(std::shared_ptr<Widget>(new Widget), computePriority());
+// potential resource leak
+// compilers may emit code in order: new Widget, computePriority(), std::shared_ptr constructor
+processWidget(std::make_shared<Widget>(), computePriority());
+// if exception will be thrown, std::shared_ptr destructor will be invoked
+
+std::shared_ptr<Widget> spw(new Widget);        // 2 allocations: Widget + control block
+auto spw = std::make_shared<Widget>();          // 1 allocation: ditto but in single chunk
+
+auto widgetDeleter = [](Widget* pw) {};
+std::unique_ptr<Widget, decltype(widgetDeleter)> upw(new Widget, widgetDeleter);
+std::shared_ptr<Widget> spw(new Widget, widgetDeleter);
+// cannot be done using make functions
+
+auto initList = { 10, 20 };
+auto spv = std::make_shared<std::vector<int>>(initList);
+// initList is a std::initializer_list object
+// std::vector's perfect-forward code using parentheses, not braces
+// if you want to construct pointed-to object using a braced initializers, you must use new directly
+// braced initializers can't be perfect-forwarded
+// using auto type deduction to create a std::initializer_list object is a workaround
+
+class ReallyBigType {};
+auto pBigObj = std::make_shared<ReallyBigType>();
+// 1. Creating and working with std::shared_ptr's and std::weak_ptr's.
+// 2. Last std::shared_ptr is being destroyed, but std::weak_ptr's remain.
+// 3. Memory formerly occupied by large object remains allocated.
+// 4. Last std::weak_ptr is being destroyed, memory for control block and object is released.
+std::shared_ptr<ReallyBigType> pBigObj(new ReallyBigType);
+// 1. As before.
+// 2. As before, plus memory object is deallocated.
+// 3. Only memory for the control block remains allocated.
+// 4. Last std::weak_ptr is being destroyed, memory for control block is released.
+
+void processWidget(std::shared_ptr<Widget> spw, int priority);
+void cusDel(Widget *ptr);
+processWidget(std::shared_ptr<Widget>(new Widget, cusDel), computePriority());
+// exception-unsafe call; we're passing an rvalues to processWidget()
+std::shared_ptr<Widget> spw(new Widget, cusDel);
+processWidget(spw, computePriority());
+// when you use new directly, immediately pass the result to a smart pointer constructor...
+// in a statement that does nothing else (compiler code emitting technique)
+// if spw's constructor throws an exception, it's guaranteed that cusDel will be invoked
+// we're passing an lvalue to processWidget()
+processWidget(std::move(spw), computePriority());
+// optimization; moving std::shared_ptr requires no reference count manipulation
+
+
+
 
 *** ITEMS ***
 ** Deducing types
@@ -826,6 +896,7 @@ Item 17: Understand special member function generation.
 Item 18: Use std::unique_ptr for exclusive-ownership resource management.
 Item 19: Use std::shared_ptr for shared-ownership resource management.
 Item 20: Use std::weak_ptr for std::shared_ptr-like pointers that can dangle.
+Item 21: Prefer std::make_unique and std::make_shared to direct use of new.
 
 
 
@@ -925,5 +996,10 @@ Item 20: Use std::weak_ptr for std::shared_ptr-like pointers that can dangle.
 ** Item 20
 * Use std::weak_ptr for std::shared_ptr-like pointers that can dangle.
 * Potential use cases for std::weak_ptr include caching, observer lists, and the prevention of std::shared_ptr cycles.
+
+** Item 21
+* Compared to direct use of new, make functions eliminate source code duplication, improve exception safety, and, for std::make_shared and std::allocate_shared, generate code that's smaller and faster.
+* Situations where use of make functions is inappropriate include the need to specify custom deleters and a desire to pass braced initializers.
+* For std::shared_ptr's, additional situations where make functions may be ill-advised include (1) classes with custom memory management and (2) systems with memory concerns, very large objects, and std::weak_ptr's that outlive the corresponding std::shared_ptr's.
 
 
