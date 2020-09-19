@@ -86,7 +86,7 @@ std::unordered_map<std::string, int> m;
 for (const std::pair<std::string, int>& p : m) {
     // key is const!
     // type of the pair in the hash table is std::pair<const std::string, int>
-    // compiler will do a convertion to std::pairt<string, int> for a temporary object
+    // compiler will do a convertion to std::pair<string, int> for a temporary object
     // explicit type specification leads to implicit convertions
 }
 
@@ -107,7 +107,7 @@ processWidget(w, highPriority);
 // auto deduced type depends on the ::reference implementation (i.e. ptr-to-word + offset)
 // the call to features returns a temporary std::vector<bool> object temp
 // invoked temp->operator[] returns ::reference containing a ptr-to-word plus offset[5]
-// highPriority of a copy of a pointer to a word in temp with its offset
+// highPriority is a copy of a pointer to a word in temp with its offset
 // at the end of the statement temp is destroyed because is a temporary object
 // this means that highPriority contains a dangling pointer!
 
@@ -298,7 +298,7 @@ auto comparison = c < 14.5;              // OK, for unscoped enum
 enum class Status;                       // forward-declaration
 
 enum class Status : std::uint32_t;       // specyfing underlying type
-enum Color : std::uint8_t;               // either at declaration or deifinition
+enum Color : std::uint8_t;               // either at declaration or definition
 
 
 template<typename E>
@@ -502,8 +502,8 @@ constexpr auto reflectedMid = reflection(mid);  // (-19.1, -16.5) known during c
 
 *** CONST MEMBER FUNCTIONS ***
 * mutable: permits modification of the class member declared mutable even if the containing object is declared const; mutable is used to specify that the member does not affect the external visible state of the class (mutexes, memo caches, lazy evaluation, ...)
-* the safe bet is that const member functions will be a subject to concurrent execution, and that's why you should ensure that yout const member functions are thread safe
-* only data that are mutable & shared requires synchronization; unshared & mutable, unshared & immutable, shared & immutable are not a problem
+* the safe bet is that const member functions will be a subject to concurrent execution, and that's why you should ensure that your const member functions are thread safe
+* only data that are mutable & shared requires synchronization; unshared & mutable, unshared & immutable, shared & immutable are not the problem
 
 class Polynomial {
 public:
@@ -544,7 +544,7 @@ private:
 * in official C++ parlance, the special member functions are the ones that C++ is willing to generate on its own; these functions are generated only if they're needed, i.e., if some code uses them without their being expressly declared in the class
 * C++98 has four such functions: the default constructor, the destructor, the copy constructor, the copy assignment operator
 * C++11 has six such functions: the default constructor, the destructor, the copy constructor, the copy assignment operator, the move constructor, the move assignment operator
-** generated special member functions are implicitly public and inline; destructor may be also virtual
+** generated special member functions are implicitly public and inline
 ** a default constructor is generated only if the class declares no constructor at all
 ** a destructor is noexcept by default, and is virtual only if a base class destructor is virtual
 ** a copy constructor is generated only if the class lacks a user-declared copy constructor; deleted if the class declares a move operation; won't be generated in a class with a user-declared copy assignment operator or destructor
@@ -578,7 +578,7 @@ private:
 };
 // copy & move operations and destructor will automatically be generated if they'll be used
 // no user-declared copy operations, thus they'll be implicitly generated
-// no explicit copy & move operations, and destructor allows for generated move operations
+// no explicit copy & move operations and destructor allows for generated move operations
 
 class StringTable {
 public:
@@ -629,7 +629,7 @@ A constructor with a single non-default parameter (until C++11) that is declared
 * a non-null std::unique_ptr always owns what it points to
 * copying a std::unique_ptr isn't allowed, because it is a move-only type
 * the common use cases for std::unique_ptr's are factory functions and Pimpl Idiom implementation
-* there is no indexing operator[] for the single-object form std::unique_ptr<T>, while the array form  std::unique_ptr<T[]> lacks dereferencing operators (operator* and operator->)
+* there is no indexing operator[] for the single-object form std::unique_ptr<T>, while the array form std::unique_ptr<T[]> lacks dereferencing operators (operator* and operator->)
 ** std::unique_ptr<T[]> make sense when you're using a C-like API that returns a raw pointer to a heap array that you assume ownership of
 ** std::array, std::vector, std::string are virtually always better data structures choices than raw pointers
 * if std::unique_ptr is a data member and object is being destroyed, std::unique_ptr would be also destroyed
@@ -737,10 +737,10 @@ class Widget : public std::enable_shared_from_this<Widget> { ... };
 void Widget::process() {
     processedWidgets.emplace_back(shared_from_this());
     // add std::shared_ptr to current object to processedWidgets
-    // use std::enable_shared_from_this::shared_from_this is a member function
+    // std::enable_shared_from_this::shared_from_this is a member function
     // internally, it looks up the control block for the current object, and creates a referee
     // the design relies on the current object having an associated control block
-    // (there must an existing std::shared_ptr that points to the current object)
+    // so, there must an existing std::shared_ptr that points to the current object
     // if no such std::shared_ptr exists, behavior is undefined (but may throw an exception)
 }
 
@@ -866,6 +866,118 @@ processWidget(std::move(spw), computePriority());
 // optimization; moving std::shared_ptr requires no reference count manipulation
 
 
+*** PIMPL IDIOM ***
+Pimpl Idiom: a 'pointer to implementation' idiom; that's the technique whereby you replace the data members of a class with a pointer to an implementation class; used to combat excessive build times
+
+class Widget {                    // in header "widget.h"
+public:
+    Widget();
+private:
+    std::string name;             // in header <string>
+    std::vector<double> data;     // in header <vector>
+    Gadget g1, g2, g3;            // in header "gadget.h"
+};
+// if a header's content changes, Widget clients must recompile
+
+class Widget {                    // in header "widget.h"
+public:
+    Widget();
+    ~Widget();                    // needed
+private:
+    struct Impl;                  // just declared type (incomplete type)
+    Impl *pImpl;
+};
+// if something changes in headers, Widget clients are unaffected
+
+#include "widget.h"                   // "widget.cpp"
+#include "gadget.h"
+#include <string>
+#include <vector>
+struct Widget::Impl {                 // define data members
+    std::string name;
+    std::vector<double> data;
+    Gadget g1, g2, g3;
+};
+Widget::Widget() : pImpl(new Impl) {  // allocate data members
+}
+Widget::~Widget() {
+    delete pImpl;                     // destroy data members
+}
+// C++98 style
+
+
+class Widget {                        // "widget.h"
+public:
+    Widget();
+private:
+    struct Impl;
+    std::unique_ptr<Impl> pImpl;
+};
+struct Widget::Impl {                 // "widget.cpp"
+    std::string name;
+    std::vector<double> data;
+    Gadget g1, g2, g3;
+};
+Widget::Widget() : pImpl(std::make_unique<Impl>()) {
+}
+// C++11 style
+
+#include "widget.h"
+Widget w;            // ERROR, applying sizeof/delete to an incomplete type!
+                     // default deleter uses delete on a raw pointer
+                     // default deleter employ static_assert to an incomplete type
+                     // the type becomes complete when its definition has been seen
+                     
+                     
+class Widget {                             // "widget.h"
+public:
+    Widget();
+    ~Widget();                             // declaration only
+    Widget(Widget&& rhs);                  // declaration only
+    Widget& operator=(Widget&& rhs);       // declaration only
+    Widget(const Widget& rhs);             // declaration only
+    Widget& operator=(const Widget& rhs);  // declaration only
+private:
+    struct Impl;
+    std::unique_ptr<Impl> pImpl;
+};
+struct Widget::Impl {                      // "widget.cpp"
+    std::string name;
+    std::vector<double> data;
+    Gadget g1, g2, g3;
+};
+Widget::Widget() : pImpl(std::make_unique<Impl>()) {
+}
+Widget::~Widget() = default;
+Widget::Widget(Widget&& rhs) = default;
+Widget& Widget::operator=(Widget&& rhs) = default;
+Widget::Widget(const Widget& rhs) : pImpl(std::make_unique<Impl>(*rhs.pIml)) {}
+Widget& Widget::operator=(const Widget& rhs) {
+    *pImpl = *rhs.pImpl;
+    return *this;
+}
+// applying move and copy support
+// move assignment operator needs to destroy the Impl object before reassigning it
+// consider w1 = w2; for already existing  Widget's w1 and w2
+// in terms of a move ctor, if an exception arises inside the ctor, dtor will invoke
+// copy operations calls compiler-generated Widget::Impl's copy operations
+
+
+class Widget {                     // "widget.h"
+public:
+    Widget();                      // plus compiler-generated special functions
+private:
+    struct Impl;
+    std::shared_ptr<Impl> pImpl;
+};
+
+Widget w1;
+auto w2(std::move(w1));
+w1 = std::move(w2);
+// for std::shared_ptr, the type of the deleter is not part of the type of the smart pointer
+// thus, pointed-to types need not be complete when compiler-generated special functions are employed
+
+
 
 
 *** ITEMS ***
@@ -897,6 +1009,11 @@ Item 18: Use std::unique_ptr for exclusive-ownership resource management.
 Item 19: Use std::shared_ptr for shared-ownership resource management.
 Item 20: Use std::weak_ptr for std::shared_ptr-like pointers that can dangle.
 Item 21: Prefer std::make_unique and std::make_shared to direct use of new.
+Item 22: When using the Pimpl Idiom, define special member functions in the implementation file.
+
+** Rvalue references, move semantics, and perfect forwarding
+Item 23: Understand std::move and std::forward.
+
 
 
 
@@ -930,7 +1047,7 @@ Item 21: Prefer std::make_unique and std::make_shared to direct use of new.
 ** Item 7
 * Braced initialization is the most widely usable initialization syntax, it prevents narrowing conversions, and it's immune to C++'s most vexing parse.
 * During constructor overload resolution, braced initializers are matched to std::initializer_list parameters if at all possible, even if other constructors offer seemingly better matches.
-* An example of where the choice between parentheses and braces can make a significant difference is creating a std::vector<numeric type> with two arguments.
+* An example of where the choice between parentheses and braces can make a significant difference is creating a std::vector<numeric_type> with two arguments.
 * Choosing between parentheses and braces for object creation inside templates can be challenging.
 
 ** Item 8
@@ -1001,5 +1118,10 @@ Item 21: Prefer std::make_unique and std::make_shared to direct use of new.
 * Compared to direct use of new, make functions eliminate source code duplication, improve exception safety, and, for std::make_shared and std::allocate_shared, generate code that's smaller and faster.
 * Situations where use of make functions is inappropriate include the need to specify custom deleters and a desire to pass braced initializers.
 * For std::shared_ptr's, additional situations where make functions may be ill-advised include (1) classes with custom memory management and (2) systems with memory concerns, very large objects, and std::weak_ptr's that outlive the corresponding std::shared_ptr's.
+
+** Item 22
+* The Pimpl Idiom decreases build times by reducing compilation dependencies between class clients and class implementations.
+* For std::unique_ptr pImpl pointers, declare special member functions in the class header, but implement them in the implementation file. Do this even if the default function implementations are acceptable.
+* The above advice applies to std::unique_ptr, but not to std::shared_ptr.
 
 
