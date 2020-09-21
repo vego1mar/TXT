@@ -979,6 +979,142 @@ w1 = std::move(w2);
 
 
 
+*** STD::MOVE & STD::FORWARD ***
+* std::move doesn't move anything, std::forward doesn't forward anything
+* at runtime, neither does anything at all; they generate no executable code
+* they both are function templates that perform casts
+* std::move unconditionally casts its argument to an rvalue, while std::forward performs this cast only if a particular condition is fulfilled
+
+template<typename T> decltype(auto) move(T&& param) {
+    using ReturnType = remove_reference_t<T>&&;
+    return static_cast<ReturnType>(param);
+} // C++14, approximation of std::move implementation
+
+
+* rvalues are only usually candidates for moving
+** move requests on const objects are silently transformed into copy operations
+** std::move doesn't guarantee that the object it's casting will be eligible to be moved
+
+class Annotation {
+public:
+    explicit Annotation(const std::string text) : value(std::move(text)) {
+        // value is copied
+    }
+private:
+    std::string value;
+};
+class string {
+public:
+    string(const string& rhs);
+    string(string&& rhs);
+};
+// std::string is a typedef for std::basic_string<char>
+// the copy constructor is invoked
+
+
+* std::move is a conditional cast
+** the most common scenerio is a function template taking a universal reference parameter that is to be passed to another function
+
+void process(const Widget& lvalArg);
+void process(Widget&& rvalArg);
+template<typename T> void logAndProcess(T&& param) {
+    auto now = std::chrono::system_clock::now();
+    makeLogEntry("Calling 'process'", now);
+    process(std::forward<T>(param));
+}
+// (formal) parameter is always an lvalue
+// (actual) argument is either an lvalue or an rvalue
+// std::forward recognizes lvalue- and rvalueness based on parameter T
+
+
+* both std::move and std::forward boil down to casts
+** std::move always casts, while std::forward only sometimes does
+** argument passing to std::forward should be a non-reference to designate rvalue
+
+class Widget {
+public:
+    Widget(Widget&& rhs) : s(std::move(rhs.s)) {
+        // std::move approach
+        ++moveCtorCalls;
+    }
+private:
+    static std::size_t moveCtorCalls;
+    std::string s;
+};
+
+class Widget {
+public:
+    Widget(Widget&& rhs) : s(std::forward<std::string>(rhs.s)) {
+        // std::forward approach
+        ++moveCtorCalls;
+    }
+private:
+    static std::size_t moveCtorCalls;
+    std::string s;
+
+};
+
+
+*** UNIVERSAL REFERENCES & RVALUE REFERENCES ***
+* universal references (forwarding references) differs from rvalue references
+** rvalue reference T&& binds only to rvalues, and its primary reason is to identify objects that may be moved from
+** forwarding reference T&& is either rvalue reference or lvalue reference
+*** they can bind to virtually anything
+*** they are references that must be initialized
+*** universal references arise in two contexts: function template parameters, auto declarations
+*** both contexts have in common the presence of type deduction
+
+void f(Widget&& param);                               // rvalue reference
+Widget&& var1 = Widget();                             // rvalue reference
+auto&& var2 = var1;                                   // forwarding reference
+template<typename T> void f(std::vector<T>&& param);  // rvalue reference
+template<typename T> void f(T&& param);               // forwarding reference
+
+
+* for a reference to be universal, type deduction is necessary, but it's not sufficient
+** the form of the reference declaration must also be correct
+** it must be precisely T&&
+** the simple presence of a const qualifier is enough to disqualify a reference from being universal
+** auto&& is a correct form of T&&
+
+template<typename T> void f(T&& param);               // universal reference
+template<typename T> void f(const T&& param);         // rvalue reference
+Widget w;
+f(w);                                                 // param=Widget& (lvalue)
+f(std::move(w));                                      // param=Widget&& (rvalue)
+
+auto timeFuncInvocation = [](auto&& func, auto&&... params) {
+    const clock_t begin_time = clock();
+    std::forward<decltype(func)>(func)(std::forward<decltype(params)>(params...));
+    return float(clock() - begin_time) / CLOCKS_PER_SEC;
+};
+
+
+* if you see a function parameter of type T&&, you **can't** assume that it's universal reference
+* the corner case is where the caller explicitly specifies the type
+
+template<class T, class Allocator = allocator<T>>
+class vector {
+public:
+    void push_back(T&& x);
+    template<class... Args> void emplace_back(Args&&... args);
+    // forwarding references
+};
+
+class vector<Widget, allocator<Widget>> {
+public:
+    void push_back(Widget&& x);
+    template<Ts...> void emplace_back(Ts&&... args);
+    // push_back: rvalue reference
+    // emplace_back: Args must be deduced with each function call
+};
+
+
+* all of this is a technical lie (abstraction)
+* the underlying truth is known as reference collapsing
+
+
+
 
 *** ITEMS ***
 ** Deducing types
@@ -1013,6 +1149,7 @@ Item 22: When using the Pimpl Idiom, define special member functions in the impl
 
 ** Rvalue references, move semantics, and perfect forwarding
 Item 23: Understand std::move and std::forward.
+Item 24: Distinguish universal references from rvalue references.
 
 
 
@@ -1123,5 +1260,16 @@ Item 23: Understand std::move and std::forward.
 * The Pimpl Idiom decreases build times by reducing compilation dependencies between class clients and class implementations.
 * For std::unique_ptr pImpl pointers, declare special member functions in the class header, but implement them in the implementation file. Do this even if the default function implementations are acceptable.
 * The above advice applies to std::unique_ptr, but not to std::shared_ptr.
+
+** Item 23
+* std::move performs an unconditional cast to an rvalue. In and of itself, it doesn't move anything.
+* std::forward casts its argument to an rvalue only if that argument is bound to an rvalue.
+* Neither std::move nor std::forward do anything at runtime.
+
+
+** Item 24
+* If a function template parameter has type T&& for a deduced type T, or if an object is declared using auto&&, the parameter or object is a universal reference.
+* If the form of the type declaration isn't precisely type&&, or if type deduction does not occur, type&& denotes an rvalue reference.
+* Universal references correspond to rvalue references if they're initialized with rvalues. They correspond to lvalue references if they're initialized with lvalues.
 
 
