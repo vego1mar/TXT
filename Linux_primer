@@ -132,6 +132,11 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install ubuntudde-dde
 reboot
+
+sudo apt remove '~ndde-.*' '~ndeepin-.*' startdde ubuntudde-dde '~nxscreensaver-.*'
+sudo apt autoremove
+sudo add-apt-repository --remove ppa:ubuntudde-dev/stable
+reboot
 %%
 
 
@@ -402,6 +407,19 @@ sudo dmidecode -s system-manufacturer         # Desktop Management Interface
 /// Displaying the difference between two files
 diff file1 file2
 diff --color --side-by-side file1.txt file2.txt
+%%
+
+
+/// Init system
+ps -p 1 -o comm=
+%%
+
+
+/// Vivaldi browser APT repository public key
+wget -qO- https://repo.vivaldi.com/archive/linux_signing_key.pub | sudo apt-key add -
+sudo add-apt-repository 'deb https://repo.vivaldi.com/archive/deb/ stable main'
+sudo apt update && sudo apt install vivaldi-stable
+# https://help.vivaldi.com/article/manual-setup-vivaldi-linux-repositories/
 %%
 
 
