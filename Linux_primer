@@ -179,7 +179,7 @@ modinfo amdgpu
 /// Ubuntu dock
 gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.5
 gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false
-# Use Extension built-in app (since Ubuntu 20.04) to disable the dock or gnome-tweaks
+# Use Extension app or gnome-tweaks to disable the dock
 %%
 
 
@@ -199,7 +199,7 @@ quit
 
 /// Finding/Displaying line numbers
 cat text_file | grep -n '' | less
-cat ./Linux_commands | grep -n '^///' | grep 'Steam' | sed 's/:.*//'
+cat ./Linux_primer | grep -n '^///' | grep 'Steam' | sed 's/:.*//'
 %%
 
 
@@ -220,8 +220,10 @@ mpv --audio-pitch-correction=yes --speed=1.0 --hwdec=vdpau --vo=opengl video.mp4
 /// rsync
 rsync --archive --verbose --delete /source_dir /target_dir
 rsync --archive --verbose --delete --recursive -checksum /home/moon/Roboczy/ /media/moon/MAXELL\ HDD/MSI-MS-7996/Roboczy/
+
 # For directories in two different drives:
 diff --brief --recursive --no-dereference --new-file --no-ignore-file-name-case /dir1 /dir2 > diff1.txt
+
 # For directories on the same drive:
 rsync --recursive --delete --links --checksum --verbose --dry-run /dir1/ /dir2/ > diff2.txt
 %%
@@ -267,13 +269,11 @@ sudo VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c47828
 %%
 
 
-/// Extracting .tar.gz archives
+/// Extracting archives
 sudo mkdir /opt/intellij-idea
 sudo tar xfz ideaIC-2018.2.5.tar.gz -C /opt/intellij-idea/
 sudo chown 755 /opt/intellij-idea
-%%
 
-/// Extracting archives
 sudo mkdir /opt/sonarqube-utils/
 sudo 7z x sonar-scanner-cli-3.2.0.1227-linux.zip -o/opt/sonarqube-utils/
 sudo 7z x build-wrapper-linux-x86.zip -o/opt/sonarqube-utils/
@@ -390,6 +390,7 @@ sudo cp ~/Documents/Roboczy/16.jpg /var/cache/image-blur/192dc9abbc741b404b5c7c2
 /// ffmpeg (merging video and audio streams, MPEG-DASH)
 # In case of MP4 format (all, except 1440p 60fps & 2160p 60fps):
 ffmpeg -i videoplayback.mp4 -i videoplayback.m4a -c:v copy -c:a copy output.mp4
+
 # In case of WebM format (1440p 60fps and 2160p 60fps):
 ffmpeg -i videoplayback.webm -i videoplayback.m4a -c:v copy -c:a copy output.mkv
 
@@ -433,6 +434,12 @@ sudo apt install font-manager
 ~/.fonts                                                   # local
 ~/.local/share/fonts
 /usr/local/share/fonts                                     # global
+%%
+
+
+/// Number of files in a directory
+find . -type f | wc -l
+find ~/.local/share/fonts -type f | wc -l
 %%
 
 
