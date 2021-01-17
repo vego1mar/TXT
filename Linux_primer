@@ -423,3 +423,37 @@ sudo apt update && sudo apt install vivaldi-stable
 %%
 
 
+/// Ubuntu memory cache
+sync && echo 3 | sudo tee /proc/sys/vm/drop_caches         # cleaning cache
+%%
+
+
+/// Fonts
+sudo apt install font-manager
+~/.fonts                                                   # local
+~/.local/share/fonts
+/usr/local/share/fonts                                     # global
+%%
+
+
+/// Checking hard drive bad sectors
+sudo apt install smartmontools
+sudo smartctl -H /dev/sda5
+sudo badblocks -v /dev/sda5 > badsectors.txt
+sudo e2fsck -l badsectors.txt /dev/sda5                    # for EXT file systems
+sudo fsck -l badsectors.txt /dev/sda5
+%%
+
+
+/// Manipulating swap
+sudo swapoff -a
+cat /proc/swaps                               # working swap partitions
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile                         # swap file
+sudo mkswap -c /dev/sd6                       # swap block device
+sudo swapon --all
+sudo echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+%%
+
+
