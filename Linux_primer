@@ -170,9 +170,21 @@ echo -n "$mystring" | wc -m                   # wc
 
 /// Graphics card information
 lspci -k | grep -EA2 'VGA|3D|Display'         # 'Kernel driver in use: amdgpu'
+lspci | grep -E 'VGA|3D'
 sudo lspci -v | grep 'VGA' -A 12
 lshw -C 'Display'
 modinfo amdgpu
+
+modinfo nvidia | grep '^version'              # driver version
+lsmod | grep 'nvidia'
+dpkg --get-selections | grep 'nvidia'
+nvidia-settings                               # NVIDIA X Server Settings
+nvidia-smi                                    # NVIDIA System Management Interface
+
+
+# Ubuntu only
+ubuntu-drivers devices                        # available drivers
+software-properties-gtk --open-tab=4          # Software&Updates -> Additional Drivers
 %%
 
 
@@ -401,7 +413,7 @@ ffmpeg -i video.webm -i audio.m4a -c:v libx264 -c:a copy out.mp4
 
 /// Running on physical system or virtual machine?
 sudo dmidecode -s system-manufacturer         # Desktop Management Interface
-                                              # innotek Gmbh for VirtualBox
+                                              # 'innotek Gmbh' for VirtualBox
 %%
 
 
@@ -431,15 +443,58 @@ sync && echo 3 | sudo tee /proc/sys/vm/drop_caches         # cleaning cache
 
 /// Fonts
 sudo apt install font-manager
-~/.fonts                                                   # local
-~/.local/share/fonts
+~/.fonts                                                   # typecatcher
+~/.local/share/fonts                                       # local
 /usr/local/share/fonts                                     # global
 %%
 
 
 /// Number of files in a directory
-find . -type f | wc -l
+find . -type f | wc -l                        # only files
 find ~/.local/share/fonts -type f | wc -l
+find . -maxdepth 1 -type f | wc -l            # no subdirectories
+
+ls -p | grep -v / | wc -l                     # only files (+symlinks)
+ls | wc -l
+ls -1A | wc -l                                # with hidden files
+
+sudo apt install tree -y
+tree -a | tail                                # files + folders + subfolders
+tree -a -L 1                                  # level of recursion
+%%
+
+
+/// Listing only regular files
+# Regular means that file is nothing special, like: 
+# symbolic link, pipe, Solaris door, null, socket, bit mask, block device, character device
+test -f ~/.bash_history && echo 'regular'
+stat ~/.bash_history
+file /dev/null
+file /etc/passwd
+file ~/.bash_history
+
+
+ls -p | grep -v /                             # non-hidden non-directories (e.g. devices)
+find . -maxdepth 1 -type f
+ls -al | grep '^-'                            # regular files (r.f.) only
+ls -al | grep '^[-l]'                         # r.f. with links, either to file or directory
+
+run-parts --list --regex '^p.*d$' /etc        # including queues and links to files
+run-parts --list --regex '^.*$' .             # Debian only
+
+ls -aF | grep -v '[/@=|]$' | more             # appends / to directories
+ls -F                                         # appends @ to symbolic links
+ls --classify                                 # appends * to executables
+                                              # appends = to sockets
+                                              # appends | to FIFOs
+                                              
+  
+# Not for file names with spaces:
+for f in *; do [ -f $f ] && echo "$f"; done;
+
+touch "some file name"
+ls -al | grep '^-' | awk '{print $9}'
+ls -al | grep '^-' | awk '{ for(i=9; i<=NF; ++i) printf $i""FS; print "" }'
 %%
 
 
@@ -449,6 +504,13 @@ sudo smartctl -H /dev/sda5
 sudo badblocks -v /dev/sda5 > badsectors.txt
 sudo e2fsck -l badsectors.txt /dev/sda5                    # for EXT file systems
 sudo fsck -l badsectors.txt /dev/sda5
+sudo e2fsck -y -c /dev/sda7
+%%
+
+
+/// Fixing errors within NTFS file systems
+sudo apt-get install ntfs-3g ntfsprogs
+sudo ntfsfix /dev/sda7
 %%
 
 
@@ -458,9 +520,144 @@ cat /proc/swaps                               # working swap partitions
 sudo fallocate -l 4G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile                         # swap file
-sudo mkswap -c /dev/sd6                       # swap block device
+sudo mkswap -c /dev/sda6                      # swap block device
 sudo swapon --all
 sudo echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+%%
+
+
+/// Is ESP mounted?
+# ESP -> EFI System Partition
+mount | grep /boot/efi
+lsblk -o NAME,PARTTYPE,MOUNTPOINT | grep -i "C12A7328-F81F-11D2-BA4B-00A0C93EC93B"
+sudo fdisk -l | grep 'EFI System'
+%%
+
+
+/// error: symbol 'grub_file_filters' not found
+# Enter Live CD distribution and open a terminal
+sudo su                                       # become a 'root'
+fdisk -l                                      # locate Linux partition; '/dev/sda1'
+mount /dev/sda1 /mnt                          # mount manually system directories
+mount --bind /dev /mnt/dev
+mount --bind /dev/pts /mnt/dev/pts
+mount --bind /proc /mnt/proc
+mount --bind /sys /mnt/sys
+chroot /mnt                                   # new root directory
+grub-install /dev/sda                         # device that possess 'sda1' partition
+exit                                          # exiting 'chroot'
+umount /mnt/dev/pts
+umount /mnt/dev
+umount /mnt/proc
+umount /mnt/sys
+umount /mnt
+reboot
+
+boot-repair-disk                              # alternative live distribution
+%%
+
+
+/// GRUB rescue for ESP
+# https://www.pcsuggest.com/grub-rescue-linux/
+
+sudo mkdir -p /mnt/chroot
+sudo mount /dev/sda2 /mnt/chroot/
+sudo mount /dev/sda1 /mnt/chroot/boot/efi
+sudo -i                                                    # 'root' for live session
+mount -B /dev/ /mnt/chroot/dev/
+mount -B /dev/pts/ /mnt/chroot/dev/pts/
+mount -B /proc/ /mnt/chroot/proc/
+mount -B /sys/ /mnt/chroot/sys/
+chroot /mnt/chroot/
+sudo grub-install /dev/sda --target=x86_64-efi             # inside chroot
+update-grub
+reboot
+
+sudo grub-install --efi-directory=/boot/efi /dev/sda       # outside chroot
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+efibootmgr                                                 # current UEFI settings
+%%
+
+
+/// Installing Vulkan API
+sudo apt install libvulkan1 mesa-vulkan-drivers vulkan-utils
+vulkaninfo | grep 'Vulkan Instance Version'
+%%
+
+
+/// Installing Allacrity (terminal emulator)
+sudo add-apt-repository ppa:mmstick76/alacritty 
+sudo apt install alacritty
+%%
+
+
+/// Installing Foliate (e-book reader)
+sudo apt install flatpak
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+sudo flatpak install flathub com.github.johnfactotum.Foliate
+flatpak update -y
+%%
+
+
+/// Intalling Brave (web browser)
+sudo apt install apt-transport-https curl gnupg
+curl -s https://brave-browser-apt-release.s3.brave.com/brave-core.asc | sudo apt-key --keyring /etc/apt/trusted.gpg.d/brave-browser-release.gpg add -
+echo "deb [arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+sudo apt update
+sudo apt install brave-browser
+%%
+
+
+/// Installing Vivaldi (web browser)
+sudo apt -y install wget gnupg2
+wget -qO- https://repo.vivaldi.com/archive/linux_signing_key.pub | sudo apt-key add -
+sudo add-apt-repository 'deb https://repo.vivaldi.com/archive/deb/ stable main' 
+sudo apt update && sudo apt install vivaldi-stable
+apt policy vivaldi-stable
+sudo /opt/vivaldi/update-ffmpeg
+
+sudo add-apt-repository "deb http://archive.canonical.com/ubuntu `lsb_release -cs` partner"
+sudo apt update && sudo apt install adobe-flashplugin
+%%
+
+
+/// A package has been kept back
+# It's when a new package must be installed to perform the upgrade.
+sudo apt-get install --reinstall libjpeg-progs
+
+sudo apt-get --with-new-pkgs upgrade                       # to install those
+sudo apt-get install kept_back_packages                    # to upgrade them
+sudo apt-get dist-upgrade                                  # to install new dependencies
+
+
+# 'Packages won't be removed unless they are unused.'
+sudo aptitude safe-upgrade
+
+
+# Held back a package (prevent from being installed, upgraded, removed)
+sudo apt-mark hold mariadb-server
+apt-mark showhold
+
+sudo aptitude forbid-version bash=5.0-6ubuntu1.1
+sudo aptitude upgrade
+
+
+# For linux-headers packages only
+sudo apt-get update
+sudo apt-get autoremove
+sudo apt-get autoclean
+sudo apt-get upgrade
+%%
+
+
+/// Swap memory insight
+free -h                                       # swap usage
+swapon --show                                 # swap type (partition or file)
+cat /proc/swaps
+cat /proc/meminfo | grep -i swap
+vmstat                                        # what is being swapped
+smem -rs swap                                 # how much swap is being used by processes
 %%
 
 
