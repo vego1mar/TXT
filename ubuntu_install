@@ -1,0 +1,112 @@
+sudo apt update
+apt list --upgradable | less
+sudo apt upgrade -y
+sudo apt autoremove -y
+sudo apt autoclean
+sudo snap refresh
+systemctl reboot
+
+sudo apt install apt-transport-https curl gnupg -y
+curl -s https://brave-browser-apt-release.s3.brave.com/brave-core.asc | sudo apt-key --keyring /etc/apt/trusted.gpg.d/brave-browser-release.gpg add -
+echo "deb [arch=amd64] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+sudo apt install brave-browser -y
+
+sudo apt install wget gnupg2 -y
+wget -qO- https://repo.vivaldi.com/archive/linux_signing_key.pub | sudo apt-key add -
+sudo add-apt-repository 'deb https://repo.vivaldi.com/archive/deb/ stable main' 
+sudo apt install vivaldi-stable -y
+apt policy vivaldi-stable
+sudo /opt/vivaldi/update-ffmpeg
+sudo add-apt-repository "deb http://archive.canonical.com/ubuntu `lsb_release -cs` partner"
+sudo apt install adobe-flashplugin -y
+
+sudo add-apt-repository ppa:quiterss/quiterss
+sudo apt install quiterss -y
+
+sudo add-apt-repository ppa:gezakovacs/ppa
+sudo apt install unetbootin -y
+
+sudo add-apt-repository ppa:mmstick76/alacritty 
+sudo apt install alacritty -y
+
+sudo apt-get install fonts-* xfonts-* ttf-* -y
+
+sudo apt install gparted p7zip-full audacity libreoffice-java-common java-common javascript-common java-package default-jre default-jdk blender mpv calibre gnome-clocks codeblocks deepin-calculator deepin-icon-theme gnome-tweaks deepin-image-viewer qt5-qmake qt5-default deepin-terminal deepin-voice-recorder devhelp flowblade gdebi gtkhash gimp htop iotop atop htop octave kate keepassxc kolourpaint vlc okular typecatcher hardinfo sigil wine wine-stable wine64 winetricks -y
+
+sudo apt install bison++ flexc++ breeze-cursor-theme cmake cpuinfo docker docker.io git hwinfo jfsutils unrar pandoc texlive-xetex python3-qtpy sqlite3 libsqlite3-dev libqt5webkit5-dev libqt5websockets5-dev libqt4-dev libxslt-dev gperf bison libsqlite3-dev flex build-essential subversion qt5-doc qt5-doc-html qtbase5-doc-html qtbase5-examples qtcreator rpm qpdf smartmontools mono-runtime gnome-books fbreader libcanberra-gtk-module memtester tree smem alacarte ntfs-3g ntfsprogs -y
+
+sudo add-apt-repository ppa:lutris-team/lutris
+sudo apt install lutris -y
+
+sudo apt install playonlinux steam libvulkan1 mesa-vulkan-drivers vulkan-utils -y
+
+sudo apt install flatpak
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+sudo flatpak install flathub com.github.johnfactotum.Foliate
+flatpak update -y
+
+sudo apt-get install ffmpeg ffmpegthumbnailer -y
+rm --recursive ~/.cache/thumbnails
+
+software-properties-gtk --open-tab=4
+systemctl reboot
+
+# Apply language support
+sudo apt update
+sudo apt upgrade -y
+sudo snap refresh
+flatpak update -y
+
+sudo snap install jdownloader2
+sudo snap connect jdownloader2:removable-media 
+sudo snap install notepadqq
+sudo snap install onlyoffice-desktopeditors
+sudo snap install discord
+sudo snap install teams-for-linux
+sudo snap install mdl
+sudo snap install brackets --classic
+sudo snap install shotcut --classic
+sudo snap install sublime-text --classic
+sudo snap install sublime-merge --classic
+
+sudo gdebi rainlendar2-lite_2.15.4.b166-1_amd64.deb
+sudo gdebi wps-office_11.1.0.10161.XA_amd64.deb
+sudo gdebi softmaker-freeoffice-2018_982-01_amd64.deb
+# Add Hunspell dictionaries and register the program
+
+sudo chmod u+x VirtualBox-6.1.18-142142-Linux_amd64.run
+sudo ./VirtualBox-6.1.18-142142-Linux_amd64.run
+sudo VBoxManage extpack install --accept-license=33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c --replace Oracle_VM_VirtualBox_Extension_Pack-6.1.18.vbox-extpack
+
+tar xfz pycharm-community-2020.3.2.tar.gz -C /media/amana/386407ee-f7b9-4feb-9332-f84151ba34f3/INSTALL/
+tar xfz ideaIC-2020.2.3.tar.gz -C /media/amana/386407ee-f7b9-4feb-9332-f84151ba34f3/INSTALL/
+cd /media/amana/386407ee-f7b9-4feb-9332-f84151ba34f3/INSTALL/
+mv ./pycharm-community-2020.3.2 ./pycharm-community
+mv ./ideaIC-2020.2.3 ./idea-community
+
+cd /media/amana/386407ee-f7b9-4feb-9332-f84151ba34f3/INSTALL/anaconda3/bin
+./pip3 install pandas
+./pip3 install pandoc
+./pip3 install mlxtend
+./pip3 install notebook-as-pdf
+./pip3 install sklearn
+./pip3 install wordnet
+./conda update --all
+
+# Apply gedit/BlueDream theme
+# Move feeds.db.bak to ~/.local/share/QuiteRss/QuiteRss as feeds.db
+# Move QuiteRss.ini.bak to ~/.config/QuiteRss as QuiteRss.ini
+# Rainlendar > Manager > File > Restore
+# Rainlendar > Options > Calendars > Settings > iCalendar Format > Filename
+# Upack vivaldi_Default.7z to ~/.config/vivaldi/
+# Apply language support
+
+sudo apt update
+sudo apt upgrade -y
+sudo snap refresh
+flatpak update -y
+systemctl reboot
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+

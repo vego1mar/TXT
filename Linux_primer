@@ -26,7 +26,7 @@ grep -rnw '/path/to/somewhere/' -e 'pattern'
 %%
 
 
-/// Displaying lines in range (lines 77-79 from a file)
+/// Displaying lines in range
 head -79 do_przeczytania | tail +77
 sed -n '77,79p' do_przeczytania
 awk 'NR>=77 && NR<=79' do_przeczytania
@@ -85,7 +85,6 @@ df -H                                         # disk file systems
 pydf                                          # Python df
 sudo fdisk -l                                 # partition information
 mount | column -t                             # mounted file systems
-free -m                                       # RAM info
 sudo dmidecode | less                         # SMBOIS data structure (DMI tables)
 cat /proc/cpuinfo
 cat /proc/meminfo
@@ -93,6 +92,12 @@ cat /proc/version
 cat /proc/scsi/scsi
 cat /proc/partitions
 blkid                                         # UUID for partitions
+
+sudo hdparm -I /dev/sda                       # ATA/SATA devices
+dmesg | grep 'SATA'
+
+free -m                                       # RAM info
+sudo dmidecode --type memory | less
 %%
 
 
@@ -191,7 +196,7 @@ software-properties-gtk --open-tab=4          # Software&Updates -> Additional D
 /// Ubuntu dock
 gsettings set org.gnome.shell.extensions.dash-to-dock background-opacity 0.5
 gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false
-# Use Extension app or gnome-tweaks to disable the dock
+# Use Extension app (gnome-tweaks) to disable the dock
 %%
 
 
@@ -225,19 +230,18 @@ echo "some string: with a colon" | sed 's/:.*//'
 
 /// mpv
 mpv --audio-pitch-correction=yes --speed=1.0 --hwdec=auto video.mp4
-mpv --audio-pitch-correction=yes --speed=1.0 --hwdec=vdpau --vo=opengl video.mp4
+mpv --no-border --hwdec=vdpau --vo=opengl video.mp4
+mpv --hwdec=vdpau --vo=gpu video.mp4
 %%
 
 
 /// rsync
+rsync -ah --progress source_file_or_dir destination_dir
 rsync --archive --verbose --delete /source_dir /target_dir
-rsync --archive --verbose --delete --recursive -checksum /home/moon/Roboczy/ /media/moon/MAXELL\ HDD/MSI-MS-7996/Roboczy/
-
-# For directories in two different drives:
-diff --brief --recursive --no-dereference --new-file --no-ignore-file-name-case /dir1 /dir2 > diff1.txt
-
-# For directories on the same drive:
-rsync --recursive --delete --links --checksum --verbose --dry-run /dir1/ /dir2/ > diff2.txt
+rsync -avr --delete --checksum /home/moon/Roboczy/ /media/moon/MAXELL\ HDD/MSI-MS-7996/Roboczy/
+rsync -rcv --delete --links --dry-run /dir1/ /dir2/ > diff2.txt
+rsync -avr --progress /media/amana/MAXELL-HDD/MSI-MS-7996/Oprogramowanie/ /media/amana/386407ee-f7b9-4feb-9332-f84151ba34f3/Oprogramowanie/
+rsync -avrh --delete --progress /media/amana/MAXELL-HDD/MSI-MS-7996/Maszyny_wirtualne/ /media/amana/386407ee-f7b9-4feb-9332-f84151ba34f3/Maszyny_wirtualne/
 %%
 
 
@@ -277,14 +281,14 @@ cd /media/sf_Roboczy/                         # shared folder path
 
 
 /// Installing VirtualBox guest additions
-sudo VBoxManage extpack install --accept-license=56be48f923303c8cababb0bb4c478284b688ed23f16d775d729b89a2e8e5f9eb --replace Oracle_VM_VirtualBox_Extension_Pack-5.2.20.vbox-extpack
+sudo VBoxManage extpack install --accept-license=33d7284dc4a0ece381196fda3cfe2ed0e1e8e7ed7f27b9a9ebc4ee22e24bd23c --replace Oracle_VM_VirtualBox_Extension_Pack-5.2.20.vbox-extpack
 %%
 
 
 /// Extracting archives
 sudo mkdir /opt/intellij-idea
 sudo tar xfz ideaIC-2018.2.5.tar.gz -C /opt/intellij-idea/
-sudo chown 755 /opt/intellij-idea
+sudo chown user /opt/intellij-idea
 
 sudo mkdir /opt/sonarqube-utils/
 sudo 7z x sonar-scanner-cli-3.2.0.1227-linux.zip -o/opt/sonarqube-utils/
@@ -625,23 +629,18 @@ sudo apt update && sudo apt install adobe-flashplugin
 /// A package has been kept back
 # It's when a new package must be installed to perform the upgrade.
 sudo apt-get install --reinstall libjpeg-progs
-
 sudo apt-get --with-new-pkgs upgrade                       # to install those
 sudo apt-get install kept_back_packages                    # to upgrade them
 sudo apt-get dist-upgrade                                  # to install new dependencies
 
-
 # 'Packages won't be removed unless they are unused.'
 sudo aptitude safe-upgrade
-
 
 # Held back a package (prevent from being installed, upgraded, removed)
 sudo apt-mark hold mariadb-server
 apt-mark showhold
-
 sudo aptitude forbid-version bash=5.0-6ubuntu1.1
 sudo aptitude upgrade
-
 
 # For linux-headers packages only
 sudo apt-get update
@@ -658,6 +657,36 @@ cat /proc/swaps
 cat /proc/meminfo | grep -i swap
 vmstat                                        # what is being swapped
 smem -rs swap                                 # how much swap is being used by processes
+%%
+
+
+/// Video files thumbnails
+sudo apt-get install ffmpeg ffmpegthumbnailer
+rm --recursive ~/.cache/thumbnails
+sudo nano /usr/share/thumbnailers/totem.thumbnailer
+systemctl reboot
+%%
+
+
+/// Installing JDownloader (program)
+sudo snap install jdownloader2
+sudo snap connect jdownloader2:removable-media 
+%%
+
+
+/// Installing Anaconda3 (framework)
+cd /media/amana/386407ee-f7b9-4feb-9332-f84151ba34f3/Oprogramowanie/Programistyczne/Anaconda3
+sudo chmod u+x Anaconda3-2020.11-Linux-x86_64.sh
+sudo ./Anaconda3-2020.11-Linux-x86_64.sh
+cd /media/amana/386407ee-f7b9-4feb-9332-f84151ba34f3/INSTALL/anaconda3/bin
+./pip3 install pandas
+./pip3 install pandoc
+./pip3 install mlxtend
+./pip3 install notebook-as-pdf
+./pip3 install sklearn
+./pip3 install wordnet
+./conda update --all
+sudo apt install pandoc texlive-xetex
 %%
 
 
